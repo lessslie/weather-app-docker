@@ -15,8 +15,11 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return app info', () => {
+      const result = appController.getHello();
+      expect(result).toHaveProperty('message');
+      expect(result).toHaveProperty('environment');
+      expect(result.message).toContain('Weather API Argentina');
     });
   });
 });
