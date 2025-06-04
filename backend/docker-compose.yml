@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: weather_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: weather_db
+      POSTGRES_USER: weather_user
+      POSTGRES_PASSWORD: weather_password_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - weather_network
+
+# Volúmenes para persistir datos
+volumes:
+  postgres_data:
+
+# Red personalizada
+networks:
+  weather_network:
+    driver: bridge

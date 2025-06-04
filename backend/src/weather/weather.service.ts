@@ -1,0 +1,130 @@
+import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { GetWeatherDto, WeatherResponseDto } from './dto/weather.dto';
+import { UsersService } from '../users/users.service';
+
+@Injectable()
+export class WeatherService {
+  private readonly apiKey: string;
+  private readonly baseUrl: string;
+
+  constructor(
+    private configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private usersService: UsersService,
+  ) {
+    this.apiKey = this.configService.get<string>('OPENWEATHER_API_KEY') || '';
+    this.baseUrl = this.configService.get<string>('OPENWEATHER_BASE_URL') || 'https://api.openweathermap.org/data/2.5';
+    
+    // Validar que tenemos la API key
+    if (!this.apiKey) {
+      throw new Error('OPENWEATHER_API_KEY no está configurada en las variables de ambiente');
+    }
+  }
+
+  async getWeatherByCity(getWeatherDto: GetWeatherDto): Promise<WeatherResponseDto> {
+    const { city, province } = getWeatherDto;
+    
+    // Crear clave para el cache
+    const cacheKey = `weather_${city.toLowerCase()}${province ? `_${province.toLowerCase()}` : ''}`;
+    
+    // Verificar si tenemos datos en cache
+    const cachedData = await this.cacheManager.get<WeatherResponseDto>(cacheKey);
+    if (cachedData) {
+      return {
+        ...cachedData,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    // Construir query para buscar la ciudad
+    const query = province ? `${city},${province},AR` : `${city},AR`;
+    
+    try {
+      // Llamar a OpenWeatherMap API
+      const response = await fetch(
+        `${this.baseUrl}/weather?q=${encodeURIComponent(query)}&appid=${this.apiKey}&units=metric&lang=es`
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new HttpException(
+            `Ciudad "${city}" no encontrada en Argentina. Verifica el nombre.`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        throw new HttpException(
+          'Error al consultar el servicio de clima',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      const data = await response.json();
+
+      // Transformar datos a nuestro formato
+      const weatherData: WeatherResponseDto = {
+        city: data.name,
+        country: data.sys.country,
+        temperature: Math.round(data.main.temp * 10) / 10,
+        feels_like: Math.round(data.main.feels_like * 10) / 10,
+        temp_min: Math.round(data.main.temp_min * 10) / 10,
+        temp_max: Math.round(data.main.temp_max * 10) / 10,
+        humidity: data.main.humidity,
+        pressure: data.main.pressure,
+        description: data.weather[0].description,
+        main: data.weather[0].main,
+        icon: data.weather[0].icon,
+        wind_speed: data.wind?.speed || 0,
+        wind_deg: data.wind?.deg || 0,
+        visibility: data.visibility || 0,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Guardar en cache por 10 minutos
+      await this.cacheManager.set(cacheKey, weatherData, 600000);
+
+      return weatherData;
+
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Error interno del servidor al consultar el clima',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // Método para obtener clima de múltiples ciudades
+  async getWeatherMultipleCities(cities: string[]): Promise<WeatherResponseDto[]> {
+    const promises = cities.map(city => 
+      this.getWeatherByCity({ city }).catch(error => ({
+        error: error.message,
+        city,
+      }))
+    );
+
+    const results = await Promise.all(promises);
+    return results.filter(result => !('error' in result)) as WeatherResponseDto[];
+  }
+
+  // Método para limpiar cache de una ciudad
+  async clearCityCache(city: string, province?: string): Promise<void> {
+    const cacheKey = `weather_${city.toLowerCase()}${province ? `_${province.toLowerCase()}` : ''}`;
+    await this.cacheManager.del(cacheKey);
+  }
+
+  // Incrementar contador de consultas del usuario
+  async incrementUserWeatherRequest(userId: string): Promise<void> {
+    try {
+      await this.usersService.incrementWeatherRequests(userId);
+    } catch (error) {
+      // Log error pero no fallar la petición del clima
+      console.error('Error incrementing user weather requests:', error);
+    }
+  }
+}

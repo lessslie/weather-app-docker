@@ -1,0 +1,14 @@
+# Scripts temporales
+*.tmp
+*.backup
+*.bak
+
+# Logs del deploy
+deploy-*.log
+
+# Archivos con secretos
+local-deploy.sh
+production-secrets.sh
+
+# Archivos temporales del deploy
+.deploy-temp/
