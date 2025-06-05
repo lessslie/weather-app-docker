@@ -13,9 +13,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     const jwtSecret = configService.get<string>('JWT_SECRET');
     if (!jwtSecret) {
-      throw new Error('JWT_SECRET no está definido en las variables de entorno');
+      throw new Error(
+        'JWT_SECRET no está definido en las variables de entorno',
+      );
     }
-    
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -26,7 +28,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: { sub: string }): Promise<User> {
     try {
       return await this.authService.validateUser(payload);
-    } catch (/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    } catch (
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       error
     ) {
       throw new UnauthorizedException('Token no válido');

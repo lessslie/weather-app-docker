@@ -37,7 +37,7 @@ import { AuthModule } from './auth/auth.module';
 
     // 📦 Módulos de la aplicación
     WeatherModule,
-    UsersModule, 
+    UsersModule,
     AuthModule, // AuthModule ya incluye todo lo de autenticación
   ],
   controllers: [AppController], // Solo controladores principales

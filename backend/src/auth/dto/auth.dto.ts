@@ -5,14 +5,14 @@ import { UserRole } from '../../users/entities/user.entity';
 export class RegisterDto {
   @ApiProperty({
     description: 'Email del usuario',
-    example: 'juan@example.com'
+    example: 'juan@example.com',
   })
   @IsEmail({}, { message: 'El email debe ser válido' })
   email: string;
 
   @ApiProperty({
     description: 'Nombre completo del usuario',
-    example: 'Juan Pérez'
+    example: 'Juan Pérez',
   })
   @IsString()
   @MinLength(2, { message: 'El nombre debe tener al menos 2 caracteres' })
@@ -22,7 +22,7 @@ export class RegisterDto {
   @ApiProperty({
     description: 'Contraseña (mínimo 6 caracteres)',
     example: 'miPassword123',
-    minLength: 6
+    minLength: 6,
   })
   @IsString()
   @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
@@ -32,14 +32,14 @@ export class RegisterDto {
 export class LoginDto {
   @ApiProperty({
     description: 'Email del usuario',
-    example: 'juan@example.com'
+    example: 'juan@example.com',
   })
   @IsEmail({}, { message: 'El email debe ser válido' })
   email: string;
 
   @ApiProperty({
     description: 'Contraseña del usuario',
-    example: 'miPassword123'
+    example: 'miPassword123',
   })
   @IsString()
   password: string;
@@ -48,7 +48,7 @@ export class LoginDto {
 export class RefreshTokenDto {
   @ApiProperty({
     description: 'Token de refresh para obtener nuevo access token',
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
   @IsString()
   refreshToken: string;
@@ -65,7 +65,10 @@ export class AuthResponseDto {
   @ApiProperty({ description: 'Tipo de token', example: 'Bearer' })
   tokenType: string;
 
-  @ApiProperty({ description: 'Tiempo de expiración en segundos', example: 86400 })
+  @ApiProperty({
+    description: 'Tiempo de expiración en segundos',
+    example: 86400,
+  })
   expiresIn: number;
 
   @ApiProperty({ description: 'Información del usuario' })

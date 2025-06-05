@@ -29,10 +29,10 @@
 //     enum: UserRole,
 //     default: UserRole.USER
 //   })
-//   @ApiProperty({ 
+//   @ApiProperty({
 //     description: 'Rol del usuario',
 //     enum: UserRole,
-//     example: UserRole.USER 
+//     example: UserRole.USER
 //   })
 //   role: UserRole;
 
@@ -55,14 +55,20 @@
 //   @CreateDateColumn()
 //   @ApiProperty({ description: 'Fecha de creación' })
 //   createdAt: Date;
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 // Enum como constante para SQLite
 export enum UserRole {
   USER = 'user',
   ADMIN = 'admin',
-  MODERATOR = 'moderator'
+  MODERATOR = 'moderator',
 }
 
 @Entity('users')
@@ -72,7 +78,10 @@ export class User {
   id: string;
 
   @Column({ unique: true })
-  @ApiProperty({ description: 'Email del usuario', example: 'juan@example.com' })
+  @ApiProperty({
+    description: 'Email del usuario',
+    example: 'juan@example.com',
+  })
   email: string;
 
   @Column()
@@ -93,12 +102,12 @@ export class User {
   // 🔧 CAMBIO PRINCIPAL: usar 'text' en lugar de 'enum' para SQLite
   @Column({
     type: 'text', // SQLite compatible
-    default: UserRole.USER
+    default: UserRole.USER,
   })
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Rol del usuario',
     enum: UserRole,
-    example: UserRole.USER 
+    example: UserRole.USER,
   })
   role: UserRole;
 
@@ -115,7 +124,10 @@ export class User {
   lastLogin?: Date;
 
   @Column({ default: 0 })
-  @ApiProperty({ description: 'Número de consultas de clima realizadas', example: 45 })
+  @ApiProperty({
+    description: 'Número de consultas de clima realizadas',
+    example: 45,
+  })
   weatherRequestsCount: number;
 
   @CreateDateColumn()

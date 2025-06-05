@@ -1,13 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 class WeatherInfo {
-  @ApiProperty({ example: 'Clear', description: 'Condición climática principal' })
+  @ApiProperty({
+    example: 'Clear',
+    description: 'Condición climática principal',
+  })
   main: string;
 
-  @ApiProperty({ example: 'cielo despejado', description: 'Descripción detallada del clima' })
+  @ApiProperty({
+    example: 'cielo despejado',
+    description: 'Descripción detallada del clima',
+  })
   description: string;
 
-  @ApiProperty({ example: '01d', description: 'Código de icono para representar el clima' })
+  @ApiProperty({
+    example: '01d',
+    description: 'Código de icono para representar el clima',
+  })
   icon: string;
 }
 
@@ -26,10 +35,16 @@ class DailyTemperature {
 }
 
 class DailyForecast {
-  @ApiProperty({ example: '2025-06-05', description: 'Fecha del pronóstico en formato YYYY-MM-DD' })
+  @ApiProperty({
+    example: '2025-06-05',
+    description: 'Fecha del pronóstico en formato YYYY-MM-DD',
+  })
   date: string;
 
-  @ApiProperty({ example: 'jueves', description: 'Nombre del día de la semana' })
+  @ApiProperty({
+    example: 'jueves',
+    description: 'Nombre del día de la semana',
+  })
   dayName: string;
 
   @ApiProperty({ type: DailyTemperature, description: 'Temperaturas del día' })
@@ -67,7 +82,10 @@ class LocationInfo {
   @ApiProperty({ example: -58.4173, description: 'Longitud' })
   lon: number;
 
-  @ApiProperty({ example: 'America/Argentina/Buenos_Aires', description: 'Zona horaria' })
+  @ApiProperty({
+    example: 'America/Argentina/Buenos_Aires',
+    description: 'Zona horaria',
+  })
   timezone: string;
 }
 
@@ -75,6 +93,9 @@ export class ForecastResponseDto {
   @ApiProperty({ type: LocationInfo, description: 'Información de ubicación' })
   location: LocationInfo;
 
-  @ApiProperty({ type: [DailyForecast], description: 'Pronóstico para los próximos 7 días' })
+  @ApiProperty({
+    type: [DailyForecast],
+    description: 'Pronóstico para los próximos 7 días',
+  })
   forecast: DailyForecast[];
 }

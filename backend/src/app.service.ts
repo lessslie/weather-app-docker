@@ -20,10 +20,11 @@ export class AppService {
         database: 'ready', // Cambiaremos a 'connected' después
         cache: 'connected',
         external_api: 'ready',
-        openweather_key: process.env.OPENWEATHER_API_KEY ? 'configured' : 'missing'
+        openweather_key: process.env.OPENWEATHER_API_KEY
+          ? 'configured'
+          : 'missing',
       },
-      version: '1.0.0'
+      version: '1.0.0',
     };
   }
-  
 }

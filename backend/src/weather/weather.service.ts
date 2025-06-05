@@ -19,22 +19,29 @@ export class WeatherService {
     private httpService: HttpService,
   ) {
     this.apiKey = this.configService.get<string>('OPENWEATHER_API_KEY') || '';
-    this.baseUrl = this.configService.get<string>('OPENWEATHER_BASE_URL') || 'https://api.openweathermap.org/data/2.5';
-    
+    this.baseUrl =
+      this.configService.get<string>('OPENWEATHER_BASE_URL') ||
+      'https://api.openweathermap.org/data/2.5';
+
     // Validar que tenemos la API key
     if (!this.apiKey) {
-      throw new Error('OPENWEATHER_API_KEY no está configurada en las variables de ambiente');
+      throw new Error(
+        'OPENWEATHER_API_KEY no está configurada en las variables de ambiente',
+      );
     }
   }
 
-  async getWeatherByCity(getWeatherDto: GetWeatherDto): Promise<WeatherResponseDto> {
+  async getWeatherByCity(
+    getWeatherDto: GetWeatherDto,
+  ): Promise<WeatherResponseDto> {
     const { city, province } = getWeatherDto;
-    
+
     // Crear clave para el cache
     const cacheKey = `weather_${city.toLowerCase()}${province ? `_${province.toLowerCase()}` : ''}`;
-    
+
     // Verificar si tenemos datos en cache
-    const cachedData = await this.cacheManager.get<WeatherResponseDto>(cacheKey);
+    const cachedData =
+      await this.cacheManager.get<WeatherResponseDto>(cacheKey);
     if (cachedData) {
       return {
         ...cachedData,
@@ -45,10 +52,10 @@ export class WeatherService {
     try {
       // Construir query para la API
       const query = province ? `${city},${province}` : city;
-      
+
       // Hacer petición a OpenWeather usando axios
       const response = await this.httpService.axiosRef.get(
-        `${this.baseUrl}/weather?q=${encodeURIComponent(query)}&appid=${this.apiKey}&units=metric&lang=es`
+        `${this.baseUrl}/weather?q=${encodeURIComponent(query)}&appid=${this.apiKey}&units=metric&lang=es`,
       );
 
       if (response.status !== 200) {
@@ -67,7 +74,14 @@ export class WeatherService {
       const data = response.data as {
         name: string;
         sys: { country: string };
-        main: { temp: number; feels_like: number; temp_min: number; temp_max: number; humidity: number; pressure: number };
+        main: {
+          temp: number;
+          feels_like: number;
+          temp_min: number;
+          temp_max: number;
+          humidity: number;
+          pressure: number;
+        };
         weather: Array<{ description: string; main: string; icon: string }>;
         wind?: { speed: number; deg: number };
         visibility?: number;
@@ -92,22 +106,22 @@ export class WeatherService {
         visibility: data.visibility || 0,
         timestamp: new Date().toISOString(),
       };
-      
+
       // Guardar en cache por 10 minutos
       await this.cacheManager.set(cacheKey, weatherData, 600000);
-      
+
       return weatherData;
     } catch (error) {
       const err = error as AxiosError;
       console.error('Error al obtener clima:', err.message);
-      
+
       if (err.response?.status === 404) {
         throw new HttpException(
           `Ciudad "${city}" no encontrada. Verifica el nombre.`,
           HttpStatus.NOT_FOUND,
         );
       }
-      
+
       throw new HttpException(
         'Error al obtener datos del clima',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -116,15 +130,17 @@ export class WeatherService {
   }
 
   // Método para obtener clima de múltiples ciudades
-  async getWeatherMultipleCities(cities: string[]): Promise<WeatherResponseDto[]> {
-    const promises = cities.map(city => 
-      this.getWeatherByCity({ city }).catch(() => null)
+  async getWeatherMultipleCities(
+    cities: string[],
+  ): Promise<WeatherResponseDto[]> {
+    const promises = cities.map((city) =>
+      this.getWeatherByCity({ city }).catch(() => null),
     );
-    
+
     const results = await Promise.all(promises);
-    
+
     // Filtrar resultados nulos (ciudades no encontradas)
-    return results.filter(result => result !== null) as WeatherResponseDto[];
+    return results.filter((result) => result !== null);
   }
 
   // Método para limpiar cache de una ciudad
@@ -137,7 +153,8 @@ export class WeatherService {
   async incrementUserWeatherRequest(userId: string): Promise<void> {
     try {
       await this.usersService.incrementWeatherRequests(userId);
-    } catch (/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    } catch (
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       _error
     ) {
       // Log error pero no fallar la petición principal

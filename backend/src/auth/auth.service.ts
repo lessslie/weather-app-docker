@@ -2,7 +2,12 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
-import { RegisterDto, LoginDto, AuthResponseDto, UserProfileDto } from './dto/auth.dto';
+import {
+  RegisterDto,
+  LoginDto,
+  AuthResponseDto,
+  UserProfileDto,
+} from './dto/auth.dto';
 import { User } from '../users/entities/user.entity';
 
 @Injectable()
@@ -35,7 +40,10 @@ export class AuthService {
     }
 
     // Validar contraseña
-    const isPasswordValid = await this.usersService.validatePassword(password, user.password);
+    const isPasswordValid = await this.usersService.validatePassword(
+      password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
@@ -49,7 +57,17 @@ export class AuthService {
       // Verificar refresh token
       const payload = this.jwtService.verify(refreshToken, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      }) as { sub: string };
+      });
+
+      // Asegurar que payload tiene la estructura correcta
+      if (
+        !payload ||
+        typeof payload !== 'object' ||
+        !('sub' in payload) ||
+        typeof payload.sub !== 'string'
+      ) {
+        throw new UnauthorizedException('Token inválido');
+      }
 
       // Buscar usuario
       const user = await this.usersService.findById(payload.sub);
@@ -63,9 +81,7 @@ export class AuthService {
       }
 
       return this.generateTokenResponse(user);
-    } catch (/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-      _error
-    ) {
+    } catch {
       throw new UnauthorizedException('Token de refresh inválido o expirado');
     }
   }
@@ -115,7 +131,7 @@ export class AuthService {
       {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
-      }
+      },
     );
 
     // Guardar refresh token en la base de datos
@@ -125,7 +141,9 @@ export class AuthService {
       accessToken,
       refreshToken,
       tokenType: 'Bearer',
-      expiresIn: this.parseTimeToSeconds(this.configService.get<string>('JWT_EXPIRES_IN') || ''),
+      expiresIn: this.parseTimeToSeconds(
+        this.configService.get<string>('JWT_EXPIRES_IN') || '',
+      ),
       user: {
         id: user.id,
         email: user.email,
@@ -142,11 +160,16 @@ export class AuthService {
     const value = parseInt(timeString.slice(0, -1));
 
     switch (unit) {
-      case 's': return value;
-      case 'm': return value * 60;
-      case 'h': return value * 3600;
-      case 'd': return value * 86400;
-      default: return 3600; // default 1 hour
+      case 's':
+        return value;
+      case 'm':
+        return value * 60;
+      case 'h':
+        return value * 3600;
+      case 'd':
+        return value * 86400;
+      default:
+        return 3600; // default 1 hour
     }
   }
 

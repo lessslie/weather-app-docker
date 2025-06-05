@@ -10,20 +10,20 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
   // 🔒 CORS configurado
-   // 🔧 Configuración de CORS para el frontend
-   app.enableCors({
+  // 🔧 Configuración de CORS para el frontend
+  app.enableCors({
     origin: [
-      'http://localhost:5173',    // Vite dev server
-      'http://localhost:5174',    // Puerto alternativo
-      'http://localhost:3030',    // Nuevo puerto del frontend
-      'http://localhost:3031',    // Por si usa el siguiente puerto
-      'http://localhost:3001',    // Por si cambias el puerto
-      'http://localhost:4173',    // Vite preview
-      'http://127.0.0.1:5173',   // Variación de localhost
-      'http://127.0.0.1:5174',   // Variación de localhost alternativo
-      'http://127.0.0.1:3030',   // Variación de localhost nuevo puerto
-      'http://localhost:3000',    // Frontend actual
-      '*',                        // Permitir todas las solicitudes (solo para desarrollo)
+      'http://localhost:5173', // Vite dev server
+      'http://localhost:5174', // Puerto alternativo
+      'http://localhost:3030', // Nuevo puerto del frontend
+      'http://localhost:3031', // Por si usa el siguiente puerto
+      'http://localhost:3001', // Por si cambias el puerto
+      'http://localhost:4173', // Vite preview
+      'http://127.0.0.1:5173', // Variación de localhost
+      'http://127.0.0.1:5174', // Variación de localhost alternativo
+      'http://127.0.0.1:3030', // Variación de localhost nuevo puerto
+      'http://localhost:3000', // Frontend actual
+      '*', // Permitir todas las solicitudes (solo para desarrollo)
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -45,7 +45,9 @@ async function bootstrap() {
   // 📚 Configuración de Swagger
   const config = new DocumentBuilder()
     .setTitle('Weather API Argentina')
-    .setDescription('API del clima para Argentina con datos detallados por provincia')
+    .setDescription(
+      'API del clima para Argentina con datos detallados por provincia',
+    )
     .setVersion('1.0')
     .addTag('weather', 'Endpoints relacionados con el clima')
     .addTag('health', 'Health checks de la aplicación')

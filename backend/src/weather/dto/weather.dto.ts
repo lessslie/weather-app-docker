@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, MinLength, MaxLength, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  MinLength,
+  MaxLength,
+  IsOptional,
+} from 'class-validator';
 
 export class GetWeatherDto {
   @ApiProperty({
@@ -50,10 +56,16 @@ export class WeatherResponseDto {
   @ApiProperty({ description: 'Presión atmosférica en hPa', example: 1013 })
   pressure: number;
 
-  @ApiProperty({ description: 'Descripción del clima', example: 'Cielo despejado' })
+  @ApiProperty({
+    description: 'Descripción del clima',
+    example: 'Cielo despejado',
+  })
   description: string;
 
-  @ApiProperty({ description: 'Condición principal del clima', example: 'Clear' })
+  @ApiProperty({
+    description: 'Condición principal del clima',
+    example: 'Clear',
+  })
   main: string;
 
   @ApiProperty({ description: 'Icono del clima', example: '01d' })

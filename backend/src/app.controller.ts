@@ -14,8 +14,8 @@ export class AppController {
       endpoints: {
         auth: '/auth',
         weather: '/weather',
-        users: '/users'
-      }
+        users: '/users',
+      },
     };
   }
 
@@ -24,7 +24,7 @@ export class AppController {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
-      database: 'connected'
+      database: 'connected',
     };
   }
 }
