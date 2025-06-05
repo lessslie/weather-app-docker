@@ -1,13 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Thermometer, Droplets, Wind, Eye, Gauge, Sun, Moon, Cloud, CloudRain, CloudSnow, Zap, Loader } from 'lucide-react';
+import React, { useState, useEffect, KeyboardEvent, FC } from 'react';
+import { Search, MapPin, Droplets, Wind, Eye, Gauge, Sun, Moon, Cloud, CloudRain, CloudSnow, Zap, Loader } from 'lucide-react';
 
-const WeatherApp = () => {
-  const [weather, setWeather] = useState(null);
-  const [featuredCities, setFeaturedCities] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchCity, setSearchCity] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
-  const [error, setError] = useState('');
+// Definición de interfaces para TypeScript
+interface WeatherData {
+  city: string;
+  country: string;
+  main: string;
+  description: string;
+  temperature: number;
+  feels_like: number;
+  temp_min: number;
+  temp_max: number;
+  humidity: number;
+  wind_speed: number;
+  wind_deg: number;
+  pressure: number;
+  visibility: number;
+  timestamp: number;
+}
+
+interface FeaturedCity {
+  city: string;
+  main: string;
+  description: string;
+  temperature: number;
+  temp_min: number;
+  temp_max: number;
+}
+
+// Definición de tipos para el mapa de iconos
+type WeatherIconMap = {
+  [key: string]: FC<{ className?: string }>;
+};
+
+const WeatherApp: FC = () => {
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [featuredCities, setFeaturedCities] = useState<FeaturedCity[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [searchCity, setSearchCity] = useState<string>('');
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   // API Base URL - Siempre usar la URL completa en desarrollo
   const API_BASE = 'http://localhost:3002/api/v1';
@@ -24,7 +56,7 @@ const WeatherApp = () => {
   
 
 
-  const fetchFeaturedCities = async () => {
+  const fetchFeaturedCities = async (): Promise<void> => {
     try {
       const response = await fetch(`${API_BASE}/weather/featured`);
       if (!response.ok) throw new Error('Error al cargar ciudades');
@@ -35,7 +67,7 @@ const WeatherApp = () => {
     }
   };
 
-  const fetchWeather = async (city) => {
+  const fetchWeather = async (city: string): Promise<void> => {
     setLoading(true);
     setError('');
     try {
@@ -50,7 +82,11 @@ const WeatherApp = () => {
       
       // Ya no llamamos a fetchForecast aquí porque lo manejamos con useEffect
     } catch (error) {
-      setError(error.message);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Error desconocido');
+      }
       setWeather(null);
     } finally {
       setLoading(false);
@@ -59,20 +95,20 @@ const WeatherApp = () => {
   
 
 
-  const handleSearch = () => {
+  const handleSearch = (): void => {
     if (searchCity.trim()) {
       fetchWeather(searchCity.trim());
     }
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter') {
       handleSearch();
     }
   };
 
-  const getWeatherIcon = (main, icon) => {
-    const iconMap = {
+  const getWeatherIcon = (main: string): FC<{ className?: string }> => {
+    const iconMap: WeatherIconMap = {
       'Clear': Sun,
       'Clouds': Cloud,
       'Rain': CloudRain,
@@ -85,7 +121,7 @@ const WeatherApp = () => {
     return iconMap[main] || Cloud;
   };
 
-  const formatTime = (timestamp) => {
+  const formatTime = (timestamp: number): string => {
     return new Date(timestamp).toLocaleTimeString('es-AR', {
       hour: '2-digit',
       minute: '2-digit',
@@ -94,7 +130,7 @@ const WeatherApp = () => {
     });
   };
 
-  const getWindDirection = (degree) => {
+  const getWindDirection = (degree: number): string => {
     const directions = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
     return directions[Math.round(degree / 45) % 8];
   };
