@@ -65,7 +65,7 @@ export class AuthService {
         payload = this.jwtService.verify(refreshToken, {
           secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         });
-      } catch (error) {
+      } catch {
         throw new UnauthorizedException('Token inválido o expirado');
       }
 
