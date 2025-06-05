@@ -7,8 +7,8 @@ WORKDIR /app
 # Copiar archivos de dependencias
 COPY package*.json ./
 
-# Instalar dependencias
-RUN npm ci --only=production && npm cache clean --force
+# Instalar TODAS las dependencias (incluyendo devDependencies para build)
+RUN npm ci && npm cache clean --force
 
 # Copiar código fuente
 COPY . .
@@ -26,7 +26,7 @@ RUN adduser -S nestjs -u 1001
 # Directorio de trabajo
 WORKDIR /app
 
-# Copiar dependencias de producción
+# Copiar dependencias de producción SOLAMENTE
 COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
