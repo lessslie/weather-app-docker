@@ -35,6 +35,7 @@ export class RolesGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
+    // Asegurarse de que request.user existe y es del tipo esperado
     const user = request.user as { role?: UserRole } | undefined;
 
     if (!user) {
@@ -73,10 +74,14 @@ import { User } from '../../users/entities/user.entity';
 export const CurrentUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): User => {
     const request = ctx.switchToHttp().getRequest();
-    const user = request.user as User;
-
-    if (!user || typeof user !== 'object') {
+    // Asegurarse de que request.user existe y es del tipo esperado
+    if (!request || !request.user) {
       throw new UnauthorizedException('Usuario no autenticado');
+    }
+
+    const user = request.user as User;
+    if (typeof user !== 'object') {
+      throw new UnauthorizedException('Usuario inválido');
     }
 
     return user;

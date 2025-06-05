@@ -70,7 +70,8 @@ export class AuthService {
       }
 
       // Buscar usuario
-      const user = await this.usersService.findById(payload.sub);
+      const sub = payload.sub;
+      const user = await this.usersService.findById(sub);
       if (!user || !user.isActive) {
         throw new UnauthorizedException('Usuario no válido');
       }
@@ -112,7 +113,7 @@ export class AuthService {
 
   // Generar respuesta con tokens
   private async generateTokenResponse(user: User): Promise<AuthResponseDto> {
-    const payload = {
+    const payload: Record<string, unknown> = {
       sub: user.id,
       email: user.email,
       role: user.role,
@@ -127,7 +128,7 @@ export class AuthService {
 
     // Generar refresh token
     const refreshToken = this.jwtService.sign(
-      { sub: user.id },
+      { sub: user.id } as Record<string, unknown>,
       {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
