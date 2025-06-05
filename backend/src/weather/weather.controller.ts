@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { WeatherService } from './weather.service';
 import { GetWeatherDto, WeatherResponseDto } from './dto/weather.dto';
+import { ForecastResponseDto } from './dto/forecast.dto';
 import { CurrentUser, Public } from '../auth/guards/auth.guard';
 import { User } from '../users/entities/user.entity';
 
@@ -112,7 +113,7 @@ export class WeatherController {
       ...result,
       userStats: {
         totalRequests: user.weatherRequestsCount + 1,
-        requestedBy: user.fullName
+        requestedBy: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim()
       }
     };
   }
@@ -131,6 +132,77 @@ export class WeatherController {
   })
   async getWeatherByParam(@Param('city') city: string): Promise<WeatherResponseDto> {
     return this.weatherService.getWeatherByCity({ city });
+  }
+
+  @Public()
+  @Get('featured')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ 
+    summary: 'Obtener clima de ciudades destacadas',
+    description: 'Retorna información meteorológica de ciudades argentinas destacadas'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de ciudades con información meteorológica',
+    type: [WeatherResponseDto],
+  })
+  async getFeaturedCities(): Promise<WeatherResponseDto[]> {
+    const featuredCities = [
+      'Buenos Aires',
+      'Córdoba', 
+      'Rosario',
+      'Mendoza',
+      'La Plata',
+      'Mar del Plata',
+      'Salta',
+      'Tucumán'
+    ];
+    
+    const weatherPromises = featuredCities.map(city => 
+      this.weatherService.getWeatherByCity({ city })
+        .catch(error => {
+          console.error(`Error fetching weather for ${city}:`, error);
+          return null;
+        })
+    );
+
+    const results = await Promise.all(weatherPromises);
+    return results.filter(result => result !== null);
+  }
+
+  @Public()
+  @Get('forecast')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ 
+    summary: 'Obtener pronóstico de 5 días (Público)',
+    description: 'Obtiene el pronóstico del clima para los próximos 5 días basado en coordenadas'
+  })
+  @ApiQuery({
+    name: 'lat',
+    description: 'Latitud de la ubicación',
+    example: '-34.6118',
+    required: true,
+    type: Number
+  })
+  @ApiQuery({
+    name: 'lon',
+    description: 'Longitud de la ubicación',
+    example: '-58.4173',
+    required: true,
+    type: Number
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Pronóstico de 5 días obtenido correctamente',
+    type: ForecastResponseDto,
+  })
+  @ApiBadRequestResponse({ description: 'Parámetros inválidos' })
+  @ApiNotFoundResponse({ description: 'Ubicación no encontrada' })
+  async getFiveDayForecast(
+    @Query('lat') lat: number,
+    @Query('lon') lon: number
+  ): Promise<ForecastResponseDto> {
+    return this.weatherService.getFiveDayForecast(lat, lon);
   }
 
   @Public()
@@ -162,31 +234,5 @@ export class WeatherController {
     await this.weatherService.clearCityCache(city);
   }
 
-  // Endpoint para obtener clima de las principales ciudades argentinas
-  @Public()
-  @Get('featured')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
-    summary: 'Clima de ciudades principales de Argentina (Público)',
-    description: 'Obtiene el clima de las principales ciudades argentinas sin requerir autenticación'
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Clima de ciudades principales',
-    type: [WeatherResponseDto],
-  })
-  async getFeaturedCities(): Promise<WeatherResponseDto[]> {
-    const featuredCities = [
-      'Buenos Aires',
-      'Córdoba', 
-      'Rosario',
-      'Mendoza',
-      'La Plata',
-      'Mar del Plata',
-      'Salta',
-      'Tucumán'
-    ];
-    
-    return this.weatherService.getWeatherMultipleCities(featuredCities);
-  }
+  // La implementación duplicada de getFeaturedCities ha sido eliminada
 }

@@ -38,11 +38,11 @@ COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 USER nestjs
 
 # Exponer puerto
-EXPOSE 3000
+EXPOSE 3002
 
 # Configurar variables de entorno por defecto
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=3002
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

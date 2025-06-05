@@ -9,8 +9,11 @@ const WeatherApp = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [error, setError] = useState('');
 
-  // API Base URL - ajústala a tu servidor
-  const API_BASE = 'http://localhost:3000/api/v1';
+  // API Base URL - Siempre usar la URL completa en desarrollo
+  const API_BASE = 'http://localhost:3002/api/v1';
+  
+  // Log para depuración
+  console.log('API Base URL:', API_BASE);
 
   // Cargar ciudades destacadas al inicio
   useEffect(() => {
@@ -18,6 +21,8 @@ const WeatherApp = () => {
     // Cargar Buenos Aires por defecto
     fetchWeather('Buenos Aires');
   }, []);
+  
+
 
   const fetchFeaturedCities = async () => {
     try {
@@ -42,6 +47,8 @@ const WeatherApp = () => {
       const data = await response.json();
       setWeather(data);
       setSearchCity(''); // Limpiar búsqueda después de éxito
+      
+      // Ya no llamamos a fetchForecast aquí porque lo manejamos con useEffect
     } catch (error) {
       setError(error.message);
       setWeather(null);
@@ -49,6 +56,8 @@ const WeatherApp = () => {
       setLoading(false);
     }
   };
+  
+
 
   const handleSearch = () => {
     if (searchCity.trim()) {
@@ -256,6 +265,8 @@ const WeatherApp = () => {
           </div>
         )}
 
+
+        
         {/* Featured Cities */}
         {featuredCities.length > 0 && (
           <div className="max-w-6xl mx-auto">

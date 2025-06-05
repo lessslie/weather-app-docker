@@ -37,23 +37,24 @@ export class UsersService {
       role: UserRole.USER,
       isActive: true,
       weatherRequestsCount: 0,
+      lastLogin: new Date()
     });
 
-    return this.usersRepository.save(user);
+    return await this.usersRepository.save(user);
   }
 
   // Buscar usuario por email (incluye password para login)
   async findByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'fullName', 'password', 'role', 'isActive', 'weatherRequestsCount', 'lastLogin']
+      select: ['id', 'email', 'fullName', 'password', 'role', 'isActive', 'weatherRequestsCount', 'lastLogin'] as (keyof User)[]
     });
   }
 
   // Buscar usuario por ID
   async findById(id: string): Promise<User | null> {
     return this.usersRepository.findOne({
-      where: { id }
+      where: { id: id }
     });
   }
 
@@ -88,7 +89,7 @@ export class UsersService {
   }> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
-      select: ['weatherRequestsCount', 'createdAt', 'lastLogin', 'role']
+      select: ['weatherRequestsCount', 'createdAt', 'lastLogin', 'role'] as (keyof User)[]
     });
 
     if (!user) {
@@ -106,7 +107,7 @@ export class UsersService {
   // Obtener todos los usuarios (solo admin)
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
-      select: ['id', 'email', 'fullName', 'role', 'isActive', 'weatherRequestsCount', 'createdAt', 'lastLogin']
+      select: ['id', 'email', 'fullName', 'role', 'isActive', 'weatherRequestsCount', 'createdAt', 'lastLogin'] as (keyof User)[]
     });
   }
 

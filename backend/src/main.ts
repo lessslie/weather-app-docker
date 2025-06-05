@@ -14,9 +14,16 @@ async function bootstrap() {
    app.enableCors({
     origin: [
       'http://localhost:5173',    // Vite dev server
+      'http://localhost:5174',    // Puerto alternativo
+      'http://localhost:3030',    // Nuevo puerto del frontend
+      'http://localhost:3031',    // Por si usa el siguiente puerto
       'http://localhost:3001',    // Por si cambias el puerto
       'http://localhost:4173',    // Vite preview
       'http://127.0.0.1:5173',   // Variación de localhost
+      'http://127.0.0.1:5174',   // Variación de localhost alternativo
+      'http://127.0.0.1:3030',   // Variación de localhost nuevo puerto
+      'http://localhost:3000',    // Frontend actual
+      '*',                        // Permitir todas las solicitudes (solo para desarrollo)
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -48,7 +55,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   // 🚀 Iniciar servidor
-  const port = configService.get('PORT') || 3000;
+  const port = configService.get('PORT') || 3002; // Puerto 3002 para el backend
   await app.listen(port);
 
   logger.log(`🚀 Aplicación corriendo en: http://localhost:${port}/api/v1`);

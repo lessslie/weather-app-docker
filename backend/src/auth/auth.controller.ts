@@ -156,7 +156,7 @@ import {
       return {
         id: user.id,
         email: user.email,
-        fullName: user.fullName,
+        fullName: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
         role: user.role,
         isAuthenticated: true,
       };

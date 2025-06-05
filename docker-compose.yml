@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Servicio del backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: weather-backend
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DB_TYPE=sqlite
+      - DB_DATABASE=weather_app.sqlite
+      - JWT_SECRET=tu_jwt_secret_super_seguro_2025_weather_api_argentina
+      - OPENWEATHER_API_KEY=9b2e0c58ac3ffba9d52c4c062c8a9490
+    volumes:
+      - ./backend/data:/app/data
+    networks:
+      - weather-network
+
+  # Servicio del frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: weather-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - weather-network
+
+networks:
+  weather-network:
+    driver: bridge

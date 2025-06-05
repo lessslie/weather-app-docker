@@ -4,6 +4,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { GetWeatherDto, WeatherResponseDto } from './dto/weather.dto';
 import { UsersService } from '../users/users.service';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class WeatherService {
@@ -14,6 +15,7 @@ export class WeatherService {
     private configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private usersService: UsersService,
+    private httpService: HttpService,
   ) {
     this.apiKey = this.configService.get<string>('OPENWEATHER_API_KEY') || '';
     this.baseUrl = this.configService.get<string>('OPENWEATHER_BASE_URL') || 'https://api.openweathermap.org/data/2.5';
@@ -23,6 +25,89 @@ export class WeatherService {
       throw new Error('OPENWEATHER_API_KEY no está configurada en las variables de ambiente');
     }
   }
+
+
+  // Agregar este método a weather.service.ts
+
+async getFiveDayForecast(lat: number, lon: number): Promise<any> {
+  try {
+    // Usamos la API gratuita de 5 días/3 horas
+    const url = `${this.baseUrl}/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${this.apiKey}`;
+    
+    const response = await this.httpService.axiosRef.get(url);
+    
+    if (response.status !== 200) {
+      throw new HttpException('Error al obtener datos del clima', HttpStatus.BAD_REQUEST);
+    }
+
+    // Agrupar pronósticos por día (tomando un pronóstico por día, a mediodía)
+    const forecastsByDay = {};
+    
+    response.data.list.forEach(item => {
+      const date = new Date(item.dt * 1000).toISOString().split('T')[0]; // YYYY-MM-DD
+      const hour = new Date(item.dt * 1000).getHours();
+      
+      // Preferimos pronósticos cercanos al mediodía (12-15h) para representar el día
+      if (!forecastsByDay[date] || (hour >= 12 && hour <= 15)) {
+        forecastsByDay[date] = item;
+      }
+    });
+    
+    // Convertir a array y tomar máximo 5 días
+    const fiveDayForecast = Object.values(forecastsByDay).slice(0, 5).map((item: any) => {
+      const date = new Date(item.dt * 1000);
+      return {
+        date: date.toISOString().split('T')[0], // Formato YYYY-MM-DD
+        dayName: date.toLocaleDateString('es-ES', { weekday: 'long' }),
+        temperature: {
+          min: Math.round(item.main.temp_min),
+          max: Math.round(item.main.temp_max),
+          day: Math.round(item.main.temp),
+          night: Math.round(item.main.temp) // No tenemos temp nocturna en esta API
+        },
+        weather: {
+          main: item.weather[0].main,
+          description: item.weather[0].description,
+          icon: item.weather[0].icon
+        },
+        humidity: item.main.humidity,
+        pressure: item.main.pressure,
+        windSpeed: item.wind.speed,
+        windDirection: item.wind.deg,
+        clouds: item.clouds.all,
+        precipitation: item.rain ? item.rain['3h'] || 0 : 0,
+        visibility: item.visibility / 1000 // en km
+      };
+    });
+
+    return {
+      location: {
+        lat,
+        lon,
+        timezone: response.data.city.timezone,
+        city: response.data.city.name,
+        country: response.data.city.country
+      },
+      forecast: fiveDayForecast
+    };
+
+  } catch (error) {
+    console.error('Error en getFiveDayForecast:', error.message);
+    
+    if (error.response?.status === 401) {
+      throw new HttpException('API Key inválida', HttpStatus.UNAUTHORIZED);
+    }
+    
+    if (error.response?.status === 404) {
+      throw new HttpException('Ubicación no encontrada', HttpStatus.NOT_FOUND);
+    }
+    
+    throw new HttpException(
+      'Error al obtener pronóstico de 7 días',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+}
 
   async getWeatherByCity(getWeatherDto: GetWeatherDto): Promise<WeatherResponseDto> {
     const { city, province } = getWeatherDto;

@@ -12,7 +12,7 @@ export default defineConfig({
     css: true,
   },
   server: {
-    host: '0.0.0.0',
-    port: 3000,
+    port: 3030, // Intentar con un puerto completamente diferente
+    strictPort: false, // Permitir que busque otro puerto si 3030 está en uso
   },
 })
