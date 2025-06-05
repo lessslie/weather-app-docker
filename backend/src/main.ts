@@ -55,7 +55,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   // 🚀 Iniciar servidor
-  const port = configService.get('PORT') || 3002; // Puerto 3002 para el backend
+  const port = configService.get<number>('PORT') || 3002; // Puerto 3002 para el backend
   await app.listen(port);
 
   logger.log(`🚀 Aplicación corriendo en: http://localhost:${port}/api/v1`);
@@ -63,4 +63,4 @@ async function bootstrap() {
   logger.log(`🌍 Ambiente: ${configService.get('NODE_ENV')}`);
 }
 
-bootstrap();
+void bootstrap();

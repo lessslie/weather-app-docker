@@ -23,10 +23,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any): Promise<User> {
+  async validate(payload: { sub: string }): Promise<User> {
     try {
       return await this.authService.validateUser(payload);
-    } catch (error) {
+    } catch (/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+      error
+    ) {
       throw new UnauthorizedException('Token no válido');
     }
   }

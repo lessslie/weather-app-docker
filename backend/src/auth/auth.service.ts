@@ -63,7 +63,9 @@ export class AuthService {
       }
 
       return this.generateTokenResponse(user);
-    } catch (_error) {
+    } catch (/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+      _error
+    ) {
       throw new UnauthorizedException('Token de refresh inválido o expirado');
     }
   }
@@ -149,7 +151,7 @@ export class AuthService {
   }
 
   // Validar usuario desde JWT payload (usado por JWT Strategy)
-  async validateUser(payload: any): Promise<User> {
+  async validateUser(payload: { sub: string }): Promise<User> {
     const user = await this.usersService.findById(payload.sub);
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Usuario no válido');

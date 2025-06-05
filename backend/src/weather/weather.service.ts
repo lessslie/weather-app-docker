@@ -64,7 +64,15 @@ export class WeatherService {
         );
       }
 
-      const data = response.data;
+      const data = response.data as {
+        name: string;
+        sys: { country: string };
+        main: { temp: number; feels_like: number; temp_min: number; temp_max: number; humidity: number; pressure: number };
+        weather: Array<{ description: string; main: string; icon: string }>;
+        wind?: { speed: number; deg: number };
+        visibility?: number;
+        coord: { lat: number; lon: number };
+      };
 
       // Transformar datos a nuestro formato
       const weatherData: WeatherResponseDto = {
@@ -129,7 +137,9 @@ export class WeatherService {
   async incrementUserWeatherRequest(userId: string): Promise<void> {
     try {
       await this.usersService.incrementWeatherRequests(userId);
-    } catch (_error) {
+    } catch (/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+      _error
+    ) {
       // Log error pero no fallar la petición principal
       console.error('Error al incrementar contador de peticiones del usuario');
     }

@@ -7,8 +7,7 @@ import {
   Post,
   Body,
   Delete,
-  Param,
-  UseGuards
+  Param
 } from '@nestjs/common';
 import { 
   ApiTags, 
