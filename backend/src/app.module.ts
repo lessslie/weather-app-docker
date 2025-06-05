@@ -20,8 +20,8 @@ import { AuthModule } from './auth/auth.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        type: 'sqlite',
-        database: configService.get('DB_DATABASE') || 'weather_app.sqlite',
+        type: 'postgres',
+        database: configService.get('DB_DATABASE') || '',
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',

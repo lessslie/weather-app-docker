@@ -4,7 +4,7 @@ module.exports = {
   extends: [
     'eslint:recommended'
   ],
-  ignorePatterns: ['dist', '.eslintrc.cjs', '*.ts', '*.tsx', 'tailwind.config.ts'],
+  ignorePatterns: ['dist', '.eslintrc.cjs', '*.ts', '*.tsx', 'tailwind.config.ts', 'postcss.config.js'],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module'
@@ -16,5 +16,14 @@ module.exports = {
   },
   rules: {
     'no-unused-vars': 'warn'
-  }
+  },
+  overrides: [
+    // Configuración para archivos JavaScript
+    {
+      files: ['*.js', '*.jsx'],
+      rules: {
+        'no-unused-vars': 'warn'
+      }
+    }
+  ]
 }

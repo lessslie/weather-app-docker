@@ -1,5 +1,6 @@
 import React, { useState, useEffect, KeyboardEvent, FC } from 'react';
 import { Search, MapPin, Droplets, Wind, Eye, Gauge, Sun, Moon, Cloud, CloudRain, CloudSnow, Zap, Loader } from 'lucide-react';
+import { apiBaseUrl } from './config';
 
 // Definición de interfaces para TypeScript
 interface WeatherData {
@@ -41,11 +42,7 @@ const WeatherApp: FC = () => {
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // API Base URL - Siempre usar la URL completa en desarrollo
-  const API_BASE = 'http://localhost:3002/api/v1';
-  
-  // Log para depuración
-  console.log('API Base URL:', API_BASE);
+  // API Base URL - Configurada automáticamente según el entorno desde config.ts
 
   // Cargar ciudades destacadas al inicio
   useEffect(() => {
@@ -58,7 +55,7 @@ const WeatherApp: FC = () => {
 
   const fetchFeaturedCities = async (): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE}/weather/featured`);
+      const response = await fetch(`${apiBaseUrl}/weather/featured`);
       if (!response.ok) throw new Error('Error al cargar ciudades');
       const data = await response.json();
       setFeaturedCities(data.slice(0, 4)); // Solo mostrar 4
@@ -71,7 +68,7 @@ const WeatherApp: FC = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE}/weather?city=${encodeURIComponent(city)}`);
+      const response = await fetch(`${apiBaseUrl}/weather?city=${encodeURIComponent(city)}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Ciudad no encontrada');
