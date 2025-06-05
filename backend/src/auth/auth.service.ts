@@ -55,23 +55,25 @@ export class AuthService {
   async refreshTokens(refreshToken: string): Promise<AuthResponseDto> {
     try {
       // Verificar refresh token
-      const payload = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      });
+      interface JwtPayload {
+        sub: string;
+        [key: string]: unknown;
+      }
 
-      // Asegurar que payload tiene la estructura correcta
-      if (
-        !payload ||
-        typeof payload !== 'object' ||
-        !('sub' in payload) ||
-        typeof payload.sub !== 'string'
-      ) {
+      let payload: JwtPayload;
+      try {
+        payload = this.jwtService.verify(refreshToken, {
+          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        });
+      } catch (error) {
+        throw new UnauthorizedException('Token inválido o expirado');
+      }
+
+      if (!payload || typeof payload.sub !== 'string') {
         throw new UnauthorizedException('Token inválido');
       }
 
-      // Buscar usuario
-      const sub = payload.sub;
-      const user = await this.usersService.findById(sub);
+      const user = await this.usersService.findById(payload.sub);
       if (!user || !user.isActive) {
         throw new UnauthorizedException('Usuario no válido');
       }
@@ -113,27 +115,38 @@ export class AuthService {
 
   // Generar respuesta con tokens
   private async generateTokenResponse(user: User): Promise<AuthResponseDto> {
-    const payload: Record<string, unknown> = {
+    // Definimos interfaces específicas para los payloads
+    interface AccessTokenPayload {
+      sub: string;
+      email: string;
+      role: string;
+      iat: number;
+    }
+
+    interface RefreshTokenPayload {
+      sub: string;
+    }
+
+    // Creamos el payload con tipos específicos
+    const accessPayload: AccessTokenPayload = {
       sub: user.id,
       email: user.email,
       role: user.role,
       iat: Math.floor(Date.now() / 1000),
     };
 
-    // Generar access token
-    const accessToken = this.jwtService.sign(payload, {
+    // Generar access token con tipo específico
+    const accessToken = this.jwtService.sign(accessPayload, {
       secret: this.configService.get<string>('JWT_SECRET'),
       expiresIn: this.configService.get<string>('JWT_EXPIRES_IN'),
     });
 
-    // Generar refresh token
-    const refreshToken = this.jwtService.sign(
-      { sub: user.id } as Record<string, unknown>,
-      {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
-      },
-    );
+    // Generar refresh token con tipo específico
+    const refreshPayload: RefreshTokenPayload = { sub: user.id };
+    const refreshToken = this.jwtService.sign(refreshPayload, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
+    });
 
     // Guardar refresh token en la base de datos
     await this.usersService.updateRefreshToken(user.id, refreshToken);

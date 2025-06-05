@@ -11,6 +11,7 @@ import { UserRole } from '../../users/entities/user.entity';
 // Guard básico JWT
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   handleRequest<T = unknown>(err: Error | null, user: T, info: unknown): T {
     if (err || !user) {
       throw err || new UnauthorizedException('Token de acceso requerido');
@@ -34,9 +35,19 @@ export class RolesGuard implements CanActivate {
       return true; // No hay roles requeridos
     }
 
-    const request = context.switchToHttp().getRequest();
-    // Asegurarse de que request.user existe y es del tipo esperado
-    const user = request.user as { role?: UserRole } | undefined;
+    // Definimos una interfaz para tipar el request
+    interface RequestWithUser {
+      user?: { role?: UserRole };
+    }
+
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
+
+    // Verificamos que request exista
+    if (!request) {
+      throw new UnauthorizedException('Contexto de solicitud inválido');
+    }
+
+    const user = request.user;
 
     if (!user) {
       throw new UnauthorizedException('Usuario no autenticado');
@@ -73,13 +84,24 @@ import { User } from '../../users/entities/user.entity';
 
 export const CurrentUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): User => {
-    const request = ctx.switchToHttp().getRequest();
-    // Asegurarse de que request.user existe y es del tipo esperado
-    if (!request || !request.user) {
+    // Definimos una interfaz para tipar el request
+    interface RequestWithUser {
+      user?: User;
+    }
+
+    const request = ctx.switchToHttp().getRequest<RequestWithUser>();
+
+    // Verificamos que request y request.user existan
+    if (!request) {
+      throw new UnauthorizedException('Contexto de solicitud inválido');
+    }
+
+    if (!request.user) {
       throw new UnauthorizedException('Usuario no autenticado');
     }
 
-    const user = request.user as User;
+    // Validamos que el usuario tenga la estructura esperada
+    const user = request.user;
     if (typeof user !== 'object') {
       throw new UnauthorizedException('Usuario inválido');
     }
