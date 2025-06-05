@@ -3,6 +3,7 @@ import { WeatherService } from './weather.service';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UsersService } from '../users/users.service';
+import { HttpService } from '@nestjs/axios';
 
 describe('WeatherService', () => {
   let service: WeatherService;
@@ -28,6 +29,15 @@ describe('WeatherService', () => {
           provide: UsersService,
           useValue: {
             findOne: jest.fn(),
+            incrementWeatherRequests: jest.fn(),
+          },
+        },
+        {
+          provide: HttpService,
+          useValue: {
+            axiosRef: {
+              get: jest.fn(),
+            },
           },
         },
       ],
