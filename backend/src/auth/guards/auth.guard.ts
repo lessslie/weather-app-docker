@@ -6,7 +6,7 @@ import { UserRole } from '../../users/entities/user.entity';
 // Guard básico JWT
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  handleRequest(err: any, user: any, info: any) {
+  handleRequest<T = any>(err: Error | null, user: T, info: any): T {
     if (err || !user) {
       throw err || new UnauthorizedException('Token de acceso requerido');
     }

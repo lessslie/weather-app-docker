@@ -5,6 +5,7 @@ import { Cache } from 'cache-manager';
 import { GetWeatherDto, WeatherResponseDto } from './dto/weather.dto';
 import { UsersService } from '../users/users.service';
 import { HttpService } from '@nestjs/axios';
+import { AxiosError } from 'axios';
 
 @Injectable()
 export class WeatherService {
@@ -26,89 +27,6 @@ export class WeatherService {
     }
   }
 
-
-  // Agregar este método a weather.service.ts
-
-async getFiveDayForecast(lat: number, lon: number): Promise<any> {
-  try {
-    // Usamos la API gratuita de 5 días/3 horas
-    const url = `${this.baseUrl}/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${this.apiKey}`;
-    
-    const response = await this.httpService.axiosRef.get(url);
-    
-    if (response.status !== 200) {
-      throw new HttpException('Error al obtener datos del clima', HttpStatus.BAD_REQUEST);
-    }
-
-    // Agrupar pronósticos por día (tomando un pronóstico por día, a mediodía)
-    const forecastsByDay = {};
-    
-    response.data.list.forEach(item => {
-      const date = new Date(item.dt * 1000).toISOString().split('T')[0]; // YYYY-MM-DD
-      const hour = new Date(item.dt * 1000).getHours();
-      
-      // Preferimos pronósticos cercanos al mediodía (12-15h) para representar el día
-      if (!forecastsByDay[date] || (hour >= 12 && hour <= 15)) {
-        forecastsByDay[date] = item;
-      }
-    });
-    
-    // Convertir a array y tomar máximo 5 días
-    const fiveDayForecast = Object.values(forecastsByDay).slice(0, 5).map((item: any) => {
-      const date = new Date(item.dt * 1000);
-      return {
-        date: date.toISOString().split('T')[0], // Formato YYYY-MM-DD
-        dayName: date.toLocaleDateString('es-ES', { weekday: 'long' }),
-        temperature: {
-          min: Math.round(item.main.temp_min),
-          max: Math.round(item.main.temp_max),
-          day: Math.round(item.main.temp),
-          night: Math.round(item.main.temp) // No tenemos temp nocturna en esta API
-        },
-        weather: {
-          main: item.weather[0].main,
-          description: item.weather[0].description,
-          icon: item.weather[0].icon
-        },
-        humidity: item.main.humidity,
-        pressure: item.main.pressure,
-        windSpeed: item.wind.speed,
-        windDirection: item.wind.deg,
-        clouds: item.clouds.all,
-        precipitation: item.rain ? item.rain['3h'] || 0 : 0,
-        visibility: item.visibility / 1000 // en km
-      };
-    });
-
-    return {
-      location: {
-        lat,
-        lon,
-        timezone: response.data.city.timezone,
-        city: response.data.city.name,
-        country: response.data.city.country
-      },
-      forecast: fiveDayForecast
-    };
-
-  } catch (error) {
-    console.error('Error en getFiveDayForecast:', error.message);
-    
-    if (error.response?.status === 401) {
-      throw new HttpException('API Key inválida', HttpStatus.UNAUTHORIZED);
-    }
-    
-    if (error.response?.status === 404) {
-      throw new HttpException('Ubicación no encontrada', HttpStatus.NOT_FOUND);
-    }
-    
-    throw new HttpException(
-      'Error al obtener pronóstico de 7 días',
-      HttpStatus.INTERNAL_SERVER_ERROR
-    );
-  }
-}
-
   async getWeatherByCity(getWeatherDto: GetWeatherDto): Promise<WeatherResponseDto> {
     const { city, province } = getWeatherDto;
     
@@ -124,19 +42,19 @@ async getFiveDayForecast(lat: number, lon: number): Promise<any> {
       };
     }
 
-    // Construir query para buscar la ciudad
-    const query = province ? `${city},${province},AR` : `${city},AR`;
-    
     try {
-      // Llamar a OpenWeatherMap API
-      const response = await fetch(
+      // Construir query para la API
+      const query = province ? `${city},${province}` : city;
+      
+      // Hacer petición a OpenWeather usando axios
+      const response = await this.httpService.axiosRef.get(
         `${this.baseUrl}/weather?q=${encodeURIComponent(query)}&appid=${this.apiKey}&units=metric&lang=es`
       );
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         if (response.status === 404) {
           throw new HttpException(
-            `Ciudad "${city}" no encontrada en Argentina. Verifica el nombre.`,
+            `Ciudad "${city}" no encontrada. Verifica el nombre.`,
             HttpStatus.NOT_FOUND,
           );
         }
@@ -146,16 +64,16 @@ async getFiveDayForecast(lat: number, lon: number): Promise<any> {
         );
       }
 
-      const data = await response.json();
+      const data = response.data;
 
       // Transformar datos a nuestro formato
       const weatherData: WeatherResponseDto = {
         city: data.name,
         country: data.sys.country,
-        temperature: Math.round(data.main.temp * 10) / 10,
-        feels_like: Math.round(data.main.feels_like * 10) / 10,
-        temp_min: Math.round(data.main.temp_min * 10) / 10,
-        temp_max: Math.round(data.main.temp_max * 10) / 10,
+        temperature: Math.round(data.main.temp),
+        feels_like: Math.round(data.main.feels_like),
+        temp_min: Math.round(data.main.temp_min),
+        temp_max: Math.round(data.main.temp_max),
         humidity: data.main.humidity,
         pressure: data.main.pressure,
         description: data.weather[0].description,
@@ -166,19 +84,24 @@ async getFiveDayForecast(lat: number, lon: number): Promise<any> {
         visibility: data.visibility || 0,
         timestamp: new Date().toISOString(),
       };
-
+      
       // Guardar en cache por 10 minutos
       await this.cacheManager.set(cacheKey, weatherData, 600000);
-
+      
       return weatherData;
-
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
+      const err = error as AxiosError;
+      console.error('Error al obtener clima:', err.message);
+      
+      if (err.response?.status === 404) {
+        throw new HttpException(
+          `Ciudad "${city}" no encontrada. Verifica el nombre.`,
+          HttpStatus.NOT_FOUND,
+        );
       }
-
+      
       throw new HttpException(
-        'Error interno del servidor al consultar el clima',
+        'Error al obtener datos del clima',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -187,14 +110,13 @@ async getFiveDayForecast(lat: number, lon: number): Promise<any> {
   // Método para obtener clima de múltiples ciudades
   async getWeatherMultipleCities(cities: string[]): Promise<WeatherResponseDto[]> {
     const promises = cities.map(city => 
-      this.getWeatherByCity({ city }).catch(error => ({
-        error: error.message,
-        city,
-      }))
+      this.getWeatherByCity({ city }).catch(() => null)
     );
-
+    
     const results = await Promise.all(promises);
-    return results.filter(result => !('error' in result)) as WeatherResponseDto[];
+    
+    // Filtrar resultados nulos (ciudades no encontradas)
+    return results.filter(result => result !== null) as WeatherResponseDto[];
   }
 
   // Método para limpiar cache de una ciudad
@@ -207,9 +129,9 @@ async getFiveDayForecast(lat: number, lon: number): Promise<any> {
   async incrementUserWeatherRequest(userId: string): Promise<void> {
     try {
       await this.usersService.incrementWeatherRequests(userId);
-    } catch (error) {
-      // Log error pero no fallar la petición del clima
-      console.error('Error incrementing user weather requests:', error);
+    } catch (_error) {
+      // Log error pero no fallar la petición principal
+      console.error('Error al incrementar contador de peticiones del usuario');
     }
   }
 }

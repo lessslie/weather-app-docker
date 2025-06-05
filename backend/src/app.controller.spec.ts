@@ -16,12 +16,13 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return app info', () => {
-      const result = appController.getHello() as any;
+      const result = appController.getHello();
       expect(result).toHaveProperty('message');
       expect(result).toHaveProperty('status');
       expect(result).toHaveProperty('version');
       expect(result).toHaveProperty('endpoints');
-      expect(result.message).toBe('Weather App API');
+      // Usar type assertion para acceder a propiedades de manera segura
+      expect((result as { message: string }).message).toBe('Weather App API');
     });
   });
 });

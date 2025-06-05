@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
@@ -49,7 +49,7 @@ export class AuthService {
       // Verificar refresh token
       const payload = this.jwtService.verify(refreshToken, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      });
+      }) as { sub: string };
 
       // Buscar usuario
       const user = await this.usersService.findById(payload.sub);
@@ -63,7 +63,7 @@ export class AuthService {
       }
 
       return this.generateTokenResponse(user);
-    } catch (error) {
+    } catch (_error) {
       throw new UnauthorizedException('Token de refresh inválido o expirado');
     }
   }

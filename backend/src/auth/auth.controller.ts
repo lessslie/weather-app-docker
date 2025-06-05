@@ -6,7 +6,6 @@ import {
     HttpStatus,
     Get,
     UseGuards,
-    Req,
   } from '@nestjs/common';
   import {
     ApiTags,
@@ -152,7 +151,7 @@ import {
         }
       }
     })
-    async getCurrentUser(@CurrentUser() user: User) {
+    getCurrentUser(@CurrentUser() user: User) {
       return {
         id: user.id,
         email: user.email,

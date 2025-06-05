@@ -21,7 +21,6 @@ import {
 } from '@nestjs/swagger';
 import { WeatherService } from './weather.service';
 import { GetWeatherDto, WeatherResponseDto } from './dto/weather.dto';
-import { ForecastResponseDto } from './dto/forecast.dto';
 import { CurrentUser, Public } from '../auth/guards/auth.guard';
 import { User } from '../users/entities/user.entity';
 
@@ -168,42 +167,7 @@ export class WeatherController {
 
     const results = await Promise.all(weatherPromises);
     return results.filter(result => result !== null);
-  }
-
-  @Public()
-  @Get('forecast')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
-    summary: 'Obtener pronóstico de 5 días (Público)',
-    description: 'Obtiene el pronóstico del clima para los próximos 5 días basado en coordenadas'
-  })
-  @ApiQuery({
-    name: 'lat',
-    description: 'Latitud de la ubicación',
-    example: '-34.6118',
-    required: true,
-    type: Number
-  })
-  @ApiQuery({
-    name: 'lon',
-    description: 'Longitud de la ubicación',
-    example: '-58.4173',
-    required: true,
-    type: Number
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Pronóstico de 5 días obtenido correctamente',
-    type: ForecastResponseDto,
-  })
-  @ApiBadRequestResponse({ description: 'Parámetros inválidos' })
-  @ApiNotFoundResponse({ description: 'Ubicación no encontrada' })
-  async getFiveDayForecast(
-    @Query('lat') lat: number,
-    @Query('lon') lon: number
-  ): Promise<ForecastResponseDto> {
-    return this.weatherService.getFiveDayForecast(lat, lon);
-  }
+  }   
 
   @Public()
   @Post('multiple')
