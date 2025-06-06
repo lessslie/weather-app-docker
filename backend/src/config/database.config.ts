@@ -25,7 +25,8 @@ export const getDatabaseConfig = (
   // Configuración para Supabase o cualquier otra base de datos PostgreSQL
   const baseConfig: TypeOrmModuleOptions = {
     type: 'postgres',
-    host: dbHost,
+    // Si es Supabase, usamos la dirección IPv4 directamente para evitar problemas de IPv6
+    host: isSupabase ? '34.102.136.180' : dbHost, // IP directa de Supabase
     port: dbPort,
     username: dbUsername,
     password: configService.get<string>('DB_PASSWORD'),
