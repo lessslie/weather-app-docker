@@ -45,6 +45,8 @@ export const getDatabaseConfig = (
         ssl: {
           rejectUnauthorized: false,
         },
+        // Forzar IPv4 para evitar problemas de conectividad
+        family: 4,
       },
     };
   }
