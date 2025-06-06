@@ -1,5 +1,9 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import * as dns from 'dns';
+
+// Configurar DNS para preferir IPv4
+dns.setDefaultResultOrder('ipv4first');
 
 export const getDatabaseConfig = (
   configService: ConfigService,
@@ -16,8 +20,18 @@ export const getDatabaseConfig = (
   const dbDatabase = configService.get<string>('DB_DATABASE');
   const sslEnabled = isProduction || isSupabase;
 
+  // Determinar la dirección IP a usar
+  let hostToUse = dbHost;
+  
+  // Si es Supabase en producción, usar la IP directa para evitar problemas de DNS
+  if (isSupabase && isProduction) {
+    // IP directa de Supabase (db.tlkeklvtvxzmowaazquc.supabase.co)
+    hostToUse = '34.102.136.180';
+    console.log(`\n⚠️ Usando IP directa para Supabase: ${hostToUse} (en lugar de ${dbHost})`);
+  }
+
   console.log(
-    `\n💾 Conectando a PostgreSQL: ${dbHost}:${dbPort} como ${dbUsername} a base de datos ${dbDatabase}`,
+    `\n💾 Conectando a PostgreSQL: ${hostToUse}:${dbPort} como ${dbUsername} a base de datos ${dbDatabase}`,
     sslEnabled ? '(con SSL)' : '(sin SSL)',
     isSupabase ? '[Supabase]' : '',
   );
@@ -25,8 +39,7 @@ export const getDatabaseConfig = (
   // Configuración para Supabase o cualquier otra base de datos PostgreSQL
   const baseConfig: TypeOrmModuleOptions = {
     type: 'postgres',
-    // Si es Supabase, usamos la dirección IPv4 directamente para evitar problemas de IPv6
-    host: isSupabase ? '34.102.136.180' : dbHost, // IP directa de Supabase
+    host: hostToUse,
     port: dbPort,
     username: dbUsername,
     password: configService.get<string>('DB_PASSWORD'),
@@ -34,6 +47,9 @@ export const getDatabaseConfig = (
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     synchronize: isDevelopment, // Solo sincronizar en desarrollo
     logging: isDevelopment,
+    retryAttempts: 10,      // Aumentar intentos de reconexión
+    retryDelay: 3000,       // 3 segundos entre intentos
+    connectTimeoutMS: 10000, // 10 segundos de timeout para conexión
   };
 
   // Agregar configuración SSL para producción o Supabase
@@ -48,6 +64,10 @@ export const getDatabaseConfig = (
         },
         // Forzar IPv4 para evitar problemas de conectividad
         family: 4,
+        // Aumentar timeouts para entornos de producción
+        connectionTimeoutMillis: 10000,
+        query_timeout: 10000,
+        statement_timeout: 10000,
       },
     };
   }
