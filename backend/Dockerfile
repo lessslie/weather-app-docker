@@ -44,9 +44,5 @@ EXPOSE 8080
 ENV NODE_ENV=production
 ENV PORT=8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node healthcheck.js
-
-# Comando para iniciar la aplicación
-CMD ["node", "dist/main.js"]
+# Comando para iniciar la aplicación - CORREGIDO
+CMD ["npm", "run", "start:prod"]
