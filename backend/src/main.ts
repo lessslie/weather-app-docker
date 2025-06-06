@@ -57,7 +57,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   // 🚀 Iniciar servidor
-  const port = configService.get<number>('PORT') || 3002; // Puerto 3002 para el backend
+  const port = configService.get<number>('PORT') || 8080; // Puerto 8080 para el backend
   await app.listen(port);
 
   logger.log(`🚀 Aplicación corriendo en: http://localhost:${port}/api/v1`);

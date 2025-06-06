@@ -9,7 +9,7 @@ interface HealthCheckOptions {
 
 const options: HealthCheckOptions = {
   host: 'localhost',
-  port: process.env.PORT || 3002, // Usando el puerto 3002 que es el del backend según la memoria
+  port: process.env.PORT || 8080, // Usando el puerto 8080 que es el del backend según la memoria
   path: '/api/v1/health',
   timeout: 2000,
 };

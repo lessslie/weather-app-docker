@@ -2,7 +2,7 @@
 const config = {
   // En desarrollo local
   development: {
-    apiBaseUrl: 'http://localhost:3002/api/v1',
+    apiBaseUrl: 'http://localhost:8080/api/v1',
   },
   // En Docker
   docker: {
@@ -10,7 +10,7 @@ const config = {
   },
   // En producción (Vercel + Railway)
   production: {
-    apiBaseUrl: import.meta.env.VITE_API_URL || 'https://tu-backend-railway-url.railway.app/api/v1',
+    apiBaseUrl: import.meta.env.VITE_API_URL || 'https://weather-app-docker.fly.dev/api/v1/',
   }
 };
 
