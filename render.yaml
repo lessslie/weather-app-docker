@@ -1,0 +1,50 @@
+services:
+  # Backend service
+  - type: web
+    name: weather-app-backend
+    env: node
+    region: ohio
+    plan: free
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && node dist/main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_HOST
+        sync: false # Debes configurar esto manualmente
+      - key: DB_PORT
+        value: 5432
+      - key: DB_USERNAME
+        sync: false # Debes configurar esto manualmente
+      - key: DB_PASSWORD
+        sync: false # Debes configurar esto manualmente
+      - key: DB_DATABASE
+        sync: false # Debes configurar esto manualmente
+      - key: IS_SUPABASE
+        value: true
+      - key: JWT_SECRET
+        generateValue: true # Genera un valor aleatorio seguro
+      - key: OPENWEATHER_API_KEY
+        value: 9b2e0c58ac3ffba9d52c4c062c8a9490
+      - key: CORS_ORIGIN
+        fromService:
+          name: weather-app-frontend
+          type: web
+          property: url
+
+  # Frontend service
+  - type: web
+    name: weather-app-frontend
+    env: node
+    region: ohio
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npx serve -s dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: weather-app-backend
+          type: web
+          property: url

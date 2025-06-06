@@ -1,52 +1,56 @@
+# Weather App con Docker
 
-# Weather App Docker
+Esta aplicación está configurada para ser ejecutada fácilmente en cualquier máquina utilizando Docker.
 
-Full-stack weather application with Docker orchestration, featuring real-time weather data, JWT authentication, and production-ready deployment.
+## Estructura del Proyecto
 
-## Features
+- **backend**: API REST desarrollada con NestJS
+- **frontend**: Aplicación web desarrollada con React
+- **docker-compose.yml**: Configuración para orquestar todos los servicios
 
-- Real-time weather data from OpenWeather API
-- JWT authentication system with refresh tokens
-- PostgreSQL database with TypeORM
-- Redis caching for performance optimization
-- Docker Compose for dev and production environments
-- Responsive design with Tailwind CSS
-- CI/CD pipeline with GitHub Actions
-- Health checks and monitoring
-- Security best practices
+## Requisitos
 
-## Tech Stack
+- Docker
+- Docker Compose
 
-### Backend
-- NestJS - Progressive Node.js framework
-- TypeScript - Type-safe development
-- TypeORM - ORM with PostgreSQL
-- Redis - Caching and session storage
-- JWT - Authentication system
-- Jest - Testing framework
+## Servicios Incluidos
 
-### Frontend
-- React 18 - UI library
-- Vite - Build tool
-- Tailwind CSS - Utility-first CSS
-- TypeScript - Type safety
-- ESLint - Code linting
+- **Frontend**: Aplicación web React servida por Nginx
+- **Backend**: API REST NestJS
+- **PostgreSQL**: Base de datos
+- **Redis**: Caché
 
-### DevOps
-- Docker - Containerization
-- Docker Compose - Multi-container orchestration
-- Nginx - Reverse proxy and load balancer
-- GitHub Actions - CI/CD pipeline
+## Cómo Iniciar la Aplicación
 
-## Quick Start
-
-### Prerequisites
-- Docker & Docker Compose
-- Node.js 20+ (for local development)
-- Git
-
-### 1. Clone the repository
+### En Windows
 
 ```bash
-git clone https://github.com/lessslie/weather-app-docker.git
-cd weather-app-docker
+.\start-docker.bat
+```
+
+### En Linux/Mac
+
+```bash
+chmod +x ./start-docker.sh
+./start-docker.sh
+```
+
+## Acceso a los Servicios
+
+- **Frontend**: http://localhost
+- **Backend API**: http://localhost:8080/api/v1
+- **Swagger Docs**: http://localhost:8080/api/docs
+
+## Detener la Aplicación
+
+```bash
+docker-compose down
+```
+
+## Variables de Entorno
+
+Las variables de entorno están configuradas en el archivo `docker-compose.yml` para producción. Para desarrollo local, se utilizan los archivos `.env` en cada directorio.
+
+## Desarrollo Local
+
+Para desarrollo local sin Docker, consulta los archivos README.md en los directorios `backend` y `frontend`.

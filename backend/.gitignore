@@ -1,12 +1,7 @@
-# ==============================================
-# NestJS + TypeScript + Docker - .gitignore
-# ==============================================
-
-# Compiled output
+# compiled output
 /dist
-/build
 /node_modules
-*.tsbuildinfo
+/build
 
 # Logs
 logs
@@ -19,7 +14,6 @@ lerna-debug.log*
 
 # OS
 .DS_Store
-Thumbs.db
 
 # Tests
 /coverage
@@ -41,27 +35,23 @@ Thumbs.db
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# Environment variables
+# dotenv environment variable files
 .env
-.env.local
-.env.development
-.env.test
 .env.production
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
+# temp directory
+.temp
+.tmp
 
-# Temporary folders
-tmp/
-temp/
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# Docker
-Dockerfile.dev
-docker-compose.override.yml
-
-# Secrets
-secrets/
-.secrets
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json

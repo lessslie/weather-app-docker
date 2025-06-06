@@ -1,39 +1,27 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const logger = new Logger('Bootstrap');
 
-  // 🔒 CORS configurado
-  // 🔧 Configuración de CORS para el frontend
+  // Configuración del prefijo global de la API
+  app.setGlobalPrefix('api');
+
+  // Configuración de CORS
+  const corsOrigins = configService.get<string>('CORS_ORIGIN')?.split(',') || [
+    'http://localhost:5174',
+  ];
   app.enableCors({
-    origin: [
-      'http://localhost:5173', // Vite dev server
-      'http://localhost:5174', // Puerto alternativo
-      'http://localhost:3030', // Nuevo puerto del frontend
-      'http://localhost:3031', // Por si usa el siguiente puerto
-      'http://localhost:3001', // Por si cambias el puerto
-      'http://localhost:4173', // Vite preview
-      'http://127.0.0.1:5173', // Variación de localhost
-      'http://127.0.0.1:5174', // Variación de localhost alternativo
-      'http://127.0.0.1:3030', // Variación de localhost nuevo puerto
-      'http://localhost:3000', // Frontend actual
-      '*', // Permitir todas las solicitudes (solo para desarrollo)
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    credentials: true, // Para cookies/auth si las necesitas
+    origin: corsOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true,
   });
 
-  // ✅ Prefijo global para todas las rutas
-  app.setGlobalPrefix('api/v1');
-
-  // 🔍 Validación global con class-validator
+  // Configuración de validación global
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -42,27 +30,27 @@ async function bootstrap() {
     }),
   );
 
-  // 📚 Configuración de Swagger
+  // Configuración de Swagger
   const config = new DocumentBuilder()
     .setTitle('Weather API Argentina')
-    .setDescription(
-      'API del clima para Argentina con datos detallados por provincia',
-    )
+    .setDescription('API para consultar el clima en Argentina')
     .setVersion('1.0')
-    .addTag('weather', 'Endpoints relacionados con el clima')
-    .addTag('health', 'Health checks de la aplicación')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  // 🚀 Iniciar servidor
-  const port = configService.get<number>('PORT') || 8080; // Puerto 8080 para el backend
+  // Iniciar el servidor
+  const port = configService.get<number>('PORT') || 8080;
   await app.listen(port);
-
-  logger.log(`🚀 Aplicación corriendo en: http://localhost:${port}/api/v1`);
-  logger.log(`📚 Documentación Swagger: http://localhost:${port}/api/docs`);
-  logger.log(`🌍 Ambiente: ${configService.get('NODE_ENV')}`);
+  console.log(`🚀 Servidor corriendo en: http://localhost:${port}/api`);
+  console.log(
+    `📚 Documentación disponible en: http://localhost:${port}/api/docs`,
+  );
 }
 
-void bootstrap();
+bootstrap().catch((err) => {
+  console.error('Error al iniciar la aplicación:', err);
+  process.exit(1);
+});

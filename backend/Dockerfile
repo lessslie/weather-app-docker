@@ -1,48 +1,36 @@
-# Etapa de construcción
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
-# Directorio de trabajo
 WORKDIR /app
 
 # Copiar archivos de dependencias
 COPY package*.json ./
 
-# Instalar TODAS las dependencias (incluyendo devDependencies para build)
-RUN npm ci && npm cache clean --force
+# Instalar dependencias
+RUN npm ci
 
-# Copiar código fuente
+# Copiar el resto del código
 COPY . .
 
 # Construir la aplicación
 RUN npm run build
 
 # Etapa de producción
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
-# Crear usuario no-root para seguridad
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nestjs -u 1001
-
-# Directorio de trabajo
 WORKDIR /app
 
-# Copiar dependencias de producción SOLAMENTE
+# Copiar package.json y package-lock.json
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
 
-# Copiar aplicación construida desde builder stage
-COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
+# Instalar solo dependencias de producción
+RUN npm ci --only=production
 
-# Cambiar a usuario no-root
-USER nestjs
+# Copiar el código compilado desde la etapa de construcción
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
 
-# Exponer puerto
+# Exponer el puerto
 EXPOSE 8080
 
-# Configurar variables de entorno por defecto
-ENV NODE_ENV=production
-ENV PORT=8080
-
-# Comando para iniciar la aplicación - CORREGIDO
-CMD ["npm", "run", "start:prod"]
+# Comando para iniciar la aplicación
+CMD ["node", "dist/main"]

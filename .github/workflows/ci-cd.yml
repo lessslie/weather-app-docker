@@ -71,10 +71,14 @@ jobs:
           NODE_ENV: test
           DB_HOST: localhost
           DB_PORT: 5432
+          DB_USERNAME: postgres
           DB_PASSWORD: test123
+          DB_DATABASE: weather_test
+          IS_SUPABASE: false
           REDIS_HOST: localhost
           REDIS_PORT: 6379
           JWT_SECRET: test-secret
+          OPENWEATHER_API_KEY: 9b2e0c58ac3ffba9d52c4c062c8a9490
 
       - name: Run Frontend Tests
         run: |

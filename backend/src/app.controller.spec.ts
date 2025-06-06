@@ -15,14 +15,8 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return app info', () => {
-      const result = appController.getHello();
-      expect(result).toHaveProperty('message');
-      expect(result).toHaveProperty('status');
-      expect(result).toHaveProperty('version');
-      expect(result).toHaveProperty('endpoints');
-      // Usar type assertion para acceder a propiedades de manera segura
-      expect((result as { message: string }).message).toBe('Weather App API');
+    it('should return "Hello World!"', () => {
+      expect(appController.getHello()).toBe('Hello World!');
     });
   });
 });
