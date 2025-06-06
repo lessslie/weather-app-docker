@@ -10,7 +10,7 @@ const config = {
   },
   // En producción (Vercel + Railway)
   production: {
-    apiBaseUrl: import.meta.env.VITE_API_URL || 'https://weather-app-docker.fly.dev/api/v1/',
+    apiBaseUrl: import.meta.env.VITE_API_URL || 'https://weather-app-docker.onrender.com/api/v1',
   }
 };
 
