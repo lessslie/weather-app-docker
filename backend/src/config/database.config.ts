@@ -1,6 +1,5 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import * as dns from 'dns';
 
 export const getDatabaseConfig = (
   configService: ConfigService,
@@ -19,7 +18,7 @@ export const getDatabaseConfig = (
 
   // Log de información de conexión para Supabase
   if (isSupabase && isProduction) {
-    console.log(`\n🔗 Conectando a Supabase usando hostname: ${dbHost}`);
+    console.log(`\n🔗 Conectando al pooler de Supabase: ${dbHost}:${dbPort}`);
   }
 
   console.log(
@@ -45,13 +44,15 @@ export const getDatabaseConfig = (
     extra: {
       // FORZAR IPv4 con configuración más específica
       family: 4,
-      hints: dns.ADDRCONFIG,
       connectionTimeoutMillis: 10000,
       query_timeout: 10000,
       statement_timeout: 10000,
-      // Agregar estas configuraciones específicas para Render
+      // Configuraciones para el pooler de conexiones
       keepAlive: true,
       keepAliveInitialDelayMillis: 0,
+      // Configuración de pool para el pooler de Supabase
+      max: 20, // Máximo de conexiones en el pool
+      idleTimeoutMillis: 30000, // Tiempo de inactividad antes de cerrar conexión
     },
   };
 
