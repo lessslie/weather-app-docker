@@ -1,9 +1,5 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import * as dns from 'dns';
-
-// Configurar DNS para preferir IPv4
-dns.setDefaultResultOrder('ipv4first');
 
 export const getDatabaseConfig = (
   configService: ConfigService,
@@ -20,18 +16,13 @@ export const getDatabaseConfig = (
   const dbDatabase = configService.get<string>('DB_DATABASE');
   const sslEnabled = isProduction || isSupabase;
 
-  // Determinar la dirección IP a usar
-  let hostToUse = dbHost;
-  
-  // Si es Supabase en producción, usar la IP directa para evitar problemas de DNS
+  // Log de información de conexión para Supabase
   if (isSupabase && isProduction) {
-    // IP directa de Supabase (db.tlkeklvtvxzmowaazquc.supabase.co)
-    hostToUse = '34.102.136.180';
-    console.log(`\n⚠️ Usando IP directa para Supabase: ${hostToUse} (en lugar de ${dbHost})`);
+    console.log(`\n🔗 Conectando a Supabase usando hostname: ${dbHost}`);
   }
 
   console.log(
-    `\n💾 Conectando a PostgreSQL: ${hostToUse}:${dbPort} como ${dbUsername} a base de datos ${dbDatabase}`,
+    `\n💾 Conectando a PostgreSQL: ${dbHost}:${dbPort} como ${dbUsername} a base de datos ${dbDatabase}`,
     sslEnabled ? '(con SSL)' : '(sin SSL)',
     isSupabase ? '[Supabase]' : '',
   );
@@ -39,7 +30,7 @@ export const getDatabaseConfig = (
   // Configuración para Supabase o cualquier otra base de datos PostgreSQL
   const baseConfig: TypeOrmModuleOptions = {
     type: 'postgres',
-    host: hostToUse,
+    host: dbHost,
     port: dbPort,
     username: dbUsername,
     password: configService.get<string>('DB_PASSWORD'),
@@ -50,6 +41,12 @@ export const getDatabaseConfig = (
     retryAttempts: 10,      // Aumentar intentos de reconexión
     retryDelay: 3000,       // 3 segundos entre intentos
     connectTimeoutMS: 10000, // 10 segundos de timeout para conexión
+    extra: {
+      family: 4, // Forzar IPv4 para todas las conexiones
+      connectionTimeoutMillis: 10000,
+      query_timeout: 10000,
+      statement_timeout: 10000,
+    },
   };
 
   // Agregar configuración SSL para producción o Supabase
@@ -57,18 +54,6 @@ export const getDatabaseConfig = (
     return {
       ...baseConfig,
       ssl: { rejectUnauthorized: false },
-      extra: {
-        // Opciones adicionales para conexiones SSL
-        ssl: {
-          rejectUnauthorized: false,
-        },
-        // Forzar IPv4 para evitar problemas de conectividad
-        family: 4,
-        // Aumentar timeouts para entornos de producción
-        connectionTimeoutMillis: 10000,
-        query_timeout: 10000,
-        statement_timeout: 10000,
-      },
     };
   }
 
