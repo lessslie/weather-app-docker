@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import * as dns from 'dns';
 
 export const getDatabaseConfig = (
   configService: ConfigService,
@@ -42,10 +43,15 @@ export const getDatabaseConfig = (
     retryDelay: 3000, // 3 segundos entre intentos
     connectTimeoutMS: 10000, // 10 segundos de timeout para conexión
     extra: {
-      family: 4, // Forzar IPv4 para todas las conexiones
+      // FORZAR IPv4 con configuración más específica
+      family: 4,
+      hints: dns.ADDRCONFIG,
       connectionTimeoutMillis: 10000,
       query_timeout: 10000,
       statement_timeout: 10000,
+      // Agregar estas configuraciones específicas para Render
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 0,
     },
   };
 
@@ -53,7 +59,11 @@ export const getDatabaseConfig = (
   if (sslEnabled) {
     return {
       ...baseConfig,
-      ssl: { rejectUnauthorized: false },
+      ssl: { 
+        rejectUnauthorized: false,
+        // Configuración adicional SSL para evitar problemas IPv6
+        checkServerIdentity: false,
+      },
     };
   }
 
