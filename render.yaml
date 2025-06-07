@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: weather-app-backend
+    runtime: docker
+    rootDir: backend
+    region: ohio
+    plan: free
+    branch: main
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_HOST
+        value: aws-0-us-east-2.pooler.supabase.com
+      - key: DB_PORT
+        value: 6543
+      - key: DB_USERNAME
+        value: postgres.tlkeklvtvxzmowaazquc
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_DATABASE
+        value: postgres
+      - key: IS_SUPABASE
+        value: true
+      - key: JWT_SECRET
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        value: 9b2e0c58ac3ffba9d52c4c062c8a9490
+      - key: CORS_ORIGIN
+        value: https://weather-app-docker.onrender.com
