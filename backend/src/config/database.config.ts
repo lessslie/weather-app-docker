@@ -38,8 +38,8 @@ export const getDatabaseConfig = (
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     synchronize: isDevelopment, // Solo sincronizar en desarrollo
     logging: isDevelopment,
-    retryAttempts: 10,      // Aumentar intentos de reconexión
-    retryDelay: 3000,       // 3 segundos entre intentos
+    retryAttempts: 10, // Aumentar intentos de reconexión
+    retryDelay: 3000, // 3 segundos entre intentos
     connectTimeoutMS: 10000, // 10 segundos de timeout para conexión
     extra: {
       family: 4, // Forzar IPv4 para todas las conexiones
