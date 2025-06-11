@@ -1,19 +1,22 @@
-// Tipos para passport-jwt
+/**
+ * Definiciones de tipos para passport-jwt
+ * Este archivo proporciona tipos TypeScript para el módulo passport-jwt
+ */
+
 declare module 'passport-jwt' {
   import { Strategy as PassportStrategy } from 'passport-strategy';
 
   export interface JwtPayload {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
   export interface VerifyCallback {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (error: any, user?: unknown, info?: unknown): void;
+    (error: Error | null, user?: unknown, info?: unknown): void;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  export type JwtFromRequestFunction = (request: any) => string | null;
+  export type JwtFromRequestFunction = (
+    request: Record<string, unknown>,
+  ) => string | null;
 
   export interface StrategyOptions {
     jwtFromRequest: JwtFromRequestFunction;
@@ -35,16 +38,13 @@ declare module 'passport-jwt' {
   }
 
   export type VerifyCallbackWithRequest = (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    request: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload: any,
+    request: Record<string, unknown>,
+    payload: JwtPayload,
     done: VerifyCallback,
   ) => void;
 
   export type VerifyCallbackWithoutRequest = (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload: any,
+    payload: JwtPayload,
     done: VerifyCallback,
   ) => void;
 
@@ -72,6 +72,23 @@ declare module 'passport-jwt' {
     static fromExtractors(
       extractors: JwtFromRequestFunction[],
     ): JwtFromRequestFunction;
-    static fromAuthHeaderWithScheme(authScheme: string): JwtFromRequestFunction;
   }
+}
+
+/**
+ * Definiciones de tipos para passport-jwt/lib/extract_jwt
+ */
+declare module 'passport-jwt/lib/extract_jwt' {
+  import { JwtFromRequestFunction } from 'passport-jwt';
+
+  export function fromHeader(header: string): JwtFromRequestFunction;
+  export function fromBodyField(field: string): JwtFromRequestFunction;
+  export function fromUrlQueryParameter(param: string): JwtFromRequestFunction;
+  export function fromAuthHeaderWithScheme(
+    authScheme: string,
+  ): JwtFromRequestFunction;
+  export function fromAuthHeaderAsBearerToken(): JwtFromRequestFunction;
+  export function fromExtractors(
+    extractors: JwtFromRequestFunction[],
+  ): JwtFromRequestFunction;
 }

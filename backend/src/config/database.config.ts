@@ -67,8 +67,8 @@ export const getDatabaseConfig = (
         ...baseConfig.extra,
         ssl: {
           rejectUnauthorized: false, // También en extra para pg driver
-        }
-      }
+        },
+      },
     };
   }
 
