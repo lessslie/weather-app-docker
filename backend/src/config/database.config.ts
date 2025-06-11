@@ -60,11 +60,7 @@ export const getDatabaseConfig = (
   if (sslEnabled) {
     return {
       ...baseConfig,
-      ssl: { 
-        rejectUnauthorized: false,
-        // Configuración adicional SSL para evitar problemas IPv6
-        checkServerIdentity: false,
-      },
+      ssl: true, // Simplificar la configuración SSL para evitar errores internos de Node.js
     };
   }
 
