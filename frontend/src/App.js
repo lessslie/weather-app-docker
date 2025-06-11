@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
@@ -31,36 +31,8 @@ export default function WeatherApp() {
     return () => clearInterval(timer);
   }, []);
 
-  // Cargar clima inicial
-  useEffect(() => {
-    testConnection();
-    searchWeatherForCity('Buenos Aires');
-  }, []);
-
-  const testConnection = async () => {
-    try {
-      console.log('Probando conexión con backend...');
-      const response = await fetch(`${API_BASE_URL}/`);
-      const data = await response.text();
-      console.log('Backend responde:', data);
-      
-      const endpoints = ['/weather/recent'];
-      
-      for (const endpoint of endpoints) {
-        try {
-          console.log(`Probando: ${API_BASE_URL}${endpoint}`);
-          const testResponse = await fetch(`${API_BASE_URL}${endpoint}`);
-          console.log(`✅ ${endpoint} funciona:`, testResponse.status);
-        } catch (error) {
-          console.log(`❌ ${endpoint} falló:`, error.message);
-        }
-      }
-    } catch (error) {
-      console.error('Error de conexión general:', error);
-    }
-  };
-
-  const searchWeatherForCity = async (cityName) => {
+  // Definir searchWeatherForCity con useCallback
+  const searchWeatherForCity = useCallback(async (cityName) => {
     try {
       console.log(`🔍 Obteniendo clima para: ${cityName}`);
       
@@ -126,10 +98,40 @@ export default function WeatherApp() {
       setWeather(null);
       return false;
     }
+  }, []);
+
+  // Cargar clima inicial
+  useEffect(() => {
+    testConnection();
+    searchWeatherForCity('Buenos Aires');
+  }, [searchWeatherForCity]);
+
+  const testConnection = async () => {
+    try {
+      console.log('Probando conexión con backend...');
+      const response = await fetch(`${API_BASE_URL}/`);
+      const data = await response.text();
+      console.log('Backend responde:', data);
+      
+      const endpoints = ['/weather/recent'];
+      
+      for (const endpoint of endpoints) {
+        try {
+          console.log(`Probando: ${API_BASE_URL}${endpoint}`);
+          const testResponse = await fetch(`${API_BASE_URL}${endpoint}`);
+          console.log(`✅ ${endpoint} funciona:`, testResponse.status);
+        } catch (error) {
+          console.log(`❌ ${endpoint} falló:`, error.message);
+        }
+      }
+    } catch (error) {
+      console.error('Error de conexión general:', error);
+    }
   };
 
+
+
   const generateMockHourlyDataStatic = (baseTemp = 14) => {
-    const hours = [];
     const now = new Date();
     
     const hourlyData = [
