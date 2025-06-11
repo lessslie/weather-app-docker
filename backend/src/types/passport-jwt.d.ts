@@ -1,82 +1,77 @@
+// Tipos para passport-jwt
 declare module 'passport-jwt' {
   import { Strategy as PassportStrategy } from 'passport-strategy';
 
+  export interface JwtPayload {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+  }
+
+  export interface VerifyCallback {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (error: any, user?: unknown, info?: unknown): void;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export type JwtFromRequestFunction = (request: any) => string | null;
+
   export interface StrategyOptions {
-    secretOrKey?: string | Buffer;
-    jwtFromRequest: (request: any) => string | null;
+    jwtFromRequest: JwtFromRequestFunction;
+    secretOrKey: string;
     issuer?: string;
     audience?: string;
     algorithms?: string[];
     ignoreExpiration?: boolean;
     passReqToCallback?: boolean;
-    jsonWebTokenOptions?: any;
+    jsonWebTokenOptions?: Record<string, unknown>;
   }
 
-  export interface VerifiedCallback {
-    (error: any, user?: any, info?: any): void;
+  export interface StrategyOptionsWithRequest extends StrategyOptions {
+    passReqToCallback: true;
   }
 
-  export interface VerifyCallback {
-    (payload: any, done: VerifiedCallback): void;
+  export interface StrategyOptionsWithoutRequest extends StrategyOptions {
+    passReqToCallback?: false;
   }
 
-  export interface VerifyCallbackWithRequest {
-    (req: any, payload: any, done: VerifiedCallback): void;
-  }
+  export type VerifyCallbackWithRequest = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    request: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload: any,
+    done: VerifyCallback,
+  ) => void;
+
+  export type VerifyCallbackWithoutRequest = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload: any,
+    done: VerifyCallback,
+  ) => void;
 
   export class Strategy extends PassportStrategy {
     constructor(
-      options: StrategyOptions,
-      verify: VerifyCallback | VerifyCallbackWithRequest,
+      options: StrategyOptionsWithRequest,
+      verify: VerifyCallbackWithRequest,
     );
-    authenticate(req: any, options?: any): void;
+    constructor(
+      options: StrategyOptionsWithoutRequest,
+      verify: VerifyCallbackWithoutRequest,
+    );
+    constructor(
+      options: StrategyOptions,
+      verify: VerifyCallbackWithRequest | VerifyCallbackWithoutRequest,
+    );
   }
 
-  export namespace ExtractJwt {
-    export function fromAuthHeaderAsBearerToken(): (
-      request: any,
-    ) => string | null;
-    export function fromAuthHeaderWithScheme(
-      auth_scheme: string,
-    ): (request: any) => string | null;
-    export function fromHeader(
-      header_name: string,
-    ): (request: any) => string | null;
-    export function fromBodyField(
-      field_name: string,
-    ): (request: any) => string | null;
-    export function fromUrlQueryParameter(
-      param_name: string,
-    ): (request: any) => string | null;
-    export function fromCookie(
-      cookie_name: string,
-    ): (request: any) => string | null;
-    export function fromExtractor(
-      extractor: (request: any) => string | null,
-    ): (request: any) => string | null;
+  export class ExtractJwt {
+    static fromHeader(header: string): JwtFromRequestFunction;
+    static fromBodyField(field: string): JwtFromRequestFunction;
+    static fromUrlQueryParameter(param: string): JwtFromRequestFunction;
+    static fromAuthHeaderWithScheme(authScheme: string): JwtFromRequestFunction;
+    static fromAuthHeaderAsBearerToken(): JwtFromRequestFunction;
+    static fromExtractors(
+      extractors: JwtFromRequestFunction[],
+    ): JwtFromRequestFunction;
+    static fromAuthHeaderWithScheme(authScheme: string): JwtFromRequestFunction;
   }
-}
-
-declare module 'passport-jwt/lib/extract_jwt' {
-  export function fromAuthHeaderAsBearerToken(): (
-    request: any,
-  ) => string | null;
-  export function fromAuthHeaderWithScheme(
-    auth_scheme: string,
-  ): (request: any) => string | null;
-  export function fromHeader(
-    header_name: string,
-  ): (request: any) => string | null;
-  export function fromBodyField(
-    field_name: string,
-  ): (request: any) => string | null;
-  export function fromUrlQueryParameter(
-    param_name: string,
-  ): (request: any) => string | null;
-  export function fromCookie(
-    cookie_name: string,
-  ): (request: any) => string | null;
-  export function fromExtractor(
-    extractor: (request: any) => string | null,
-  ): (request: any) => string | null;
 }
