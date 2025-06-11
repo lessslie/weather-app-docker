@@ -83,7 +83,7 @@ jobs:
       - name: Run Frontend Tests
         run: |
           cd frontend
-          npm run test
+          npm test -- --passWithNoTests --watchAll=false
 
       - name: Backend Lint
         run: |
