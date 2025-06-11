@@ -4,10 +4,10 @@ import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Strategy, ExtractJwt } from 'passport-jwt';
-import { User } from '../../users/entities/user.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 
 export interface JwtPayload {
-  sub: number;
+  sub: string;
   email: string;
   iat?: number;
   exp?: number;
@@ -23,7 +23,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'default-secret-key-for-dev',
+      secretOrKey:
+        configService.get<string>('JWT_SECRET') || 'default-secret-key-for-dev',
     });
   }
 
