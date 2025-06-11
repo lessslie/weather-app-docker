@@ -6,7 +6,7 @@ services:
     region: ohio
     plan: free
     branch: main
-    healthCheckPath: /api/
+    healthCheckPath: /api
     dockerCommand: node dist/main
     envVars:
       - key: NODE_ENV
