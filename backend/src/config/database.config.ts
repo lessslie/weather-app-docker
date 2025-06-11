@@ -56,11 +56,19 @@ export const getDatabaseConfig = (
     },
   };
 
-  // Agregar configuración SSL para producción o Supabase
+  // Configuración SSL CORREGIDA para Supabase
   if (sslEnabled) {
     return {
       ...baseConfig,
-      ssl: true, // Simplificar la configuración SSL para evitar errores internos de Node.js
+      ssl: {
+        rejectUnauthorized: false, // IMPORTANTE: Para Supabase pooler
+      },
+      extra: {
+        ...baseConfig.extra,
+        ssl: {
+          rejectUnauthorized: false, // También en extra para pg driver
+        }
+      }
     };
   }
 

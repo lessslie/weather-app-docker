@@ -6,7 +6,8 @@ services:
     region: ohio
     plan: free
     branch: main
-    healthCheckPath: /api/v1/health
+    healthCheckPath: /api/
+    dockerCommand: node dist/main
     envVars:
       - key: NODE_ENV
         value: production
@@ -29,4 +30,6 @@ services:
       - key: OPENWEATHER_API_KEY
         value: 9b2e0c58ac3ffba9d52c4c062c8a9490
       - key: CORS_ORIGIN
-        value: https://weather-app-docker.onrender.com
+        value: https://your-frontend.vercel.app,http://localhost:3000
+      - key: NODE_TLS_REJECT_UNAUTHORIZED
+        value: 0
