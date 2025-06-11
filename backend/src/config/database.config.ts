@@ -36,7 +36,7 @@ export const getDatabaseConfig = (
     password: configService.get<string>('DB_PASSWORD'),
     database: dbDatabase,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: isDevelopment, // Solo sincronizar en desarrollo
+    synchronize: isDevelopment || isProduction, // Temporalmente para crear tablas
     logging: isDevelopment,
     retryAttempts: 10, // Aumentar intentos de reconexión
     retryDelay: 3000, // 3 segundos entre intentos
