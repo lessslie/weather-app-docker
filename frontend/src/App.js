@@ -35,7 +35,6 @@ export default function WeatherApp() {
   useEffect(() => {
     testConnection();
     searchWeatherForCity('Buenos Aires');
-    setForecast(generateMockHourlyDataStatic());
   }, []);
 
   const testConnection = async () => {
@@ -82,6 +81,11 @@ export default function WeatherApp() {
         
         console.log('✅ Clima obtenido:', normalizedWeather);
         setWeather(normalizedWeather);
+        
+        // 🎯 FIX: Generar forecast con la nueva temperatura
+        const newForecast = generateMockHourlyDataStatic(normalizedWeather?.main?.temp || 14);
+        setForecast(newForecast);
+        
         setError('');
         return true;
       }
@@ -106,6 +110,11 @@ export default function WeatherApp() {
           
           console.log('✅ Clima obtenido (fallback):', weatherData);
           setWeather(weatherData);
+          
+          // 🎯 FIX: Generar forecast con la temperatura de fallback
+          const fallbackForecast = generateMockHourlyDataStatic(weatherData?.main?.temp || 14);
+          setForecast(fallbackForecast);
+          
           setError('Mostrando clima reciente (búsqueda específica no disponible)');
           return true;
         }
@@ -153,11 +162,8 @@ export default function WeatherApp() {
     if (!searchCity.trim()) return;
     
     setLoading(true);
-    const success = await searchWeatherForCity(searchCity.trim());
-    if (success) {
-      const newForecast = generateMockHourlyDataStatic(weather?.main?.temp || 14);
-      setForecast(newForecast);
-    }
+    // 🎯 FIX: Ahora searchWeatherForCity maneja el forecast internamente
+    await searchWeatherForCity(searchCity.trim());
     setLoading(false);
   };
 
