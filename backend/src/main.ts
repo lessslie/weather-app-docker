@@ -17,6 +17,12 @@ async function bootstrap(): Promise<void> {
     .get<string>('CORS_ORIGIN')
     ?.split(',') || ['http://localhost:5174', 'http://localhost:3000'];
 
+  // Añadir dominios específicos de producción
+  corsOrigins.push(
+    'https://weather-app-docker-174s6t3m9-agatas-projects-96c6f9ee.vercel.app',
+  );
+  corsOrigins.push('https://weather-app-docker.vercel.app');
+
   // Función para validar orígenes dinámicamente
   const corsOriginFunction = (
     origin: string | undefined,
@@ -46,12 +52,13 @@ async function bootstrap(): Promise<void> {
   };
 
   const corsOptions: CorsOptions = {
-    origin: process.env.NODE_ENV === 'production' ? corsOriginFunction : true,
+    origin: corsOriginFunction, // Usar la función de validación siempre, no solo en producción
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204,
+    maxAge: 3600, // Cachear preflight por 1 hora para reducir OPTIONS requests
   };
 
   app.enableCors(corsOptions);
@@ -88,6 +95,9 @@ async function bootstrap(): Promise<void> {
     `📚 Documentación disponible en: http://localhost:${port}/api/docs`,
   );
   console.log(`🌐 CORS configurado para:`, corsOrigins);
+  console.log(
+    `🌐 CORS dinámico habilitado para dominios .vercel.app y localhost`,
+  );
   console.log(`🔧 Entorno:`, process.env.NODE_ENV || 'development');
 }
 
